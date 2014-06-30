@@ -1,0 +1,31 @@
+<?php
+ use Zend\Debug\Debug;
+
+//
+ ?>
+<h1>Clients</h1>
+<a href="<?php echo $this->url('user-manager',array('action'=>'add'));?>">Add User</a> 
+<?php
+foreach($users as $user){
+//    echo '<pre>';
+//    print_r($user);
+//    echo '</pre>';
+//    exit;
+//    Debug::dump($user);exit;
+?>    
+<div>
+<?php
+    echo $user->name;
+    echo "&nbsp;&nbsp;&nbsp;"; 
+    echo $user->email;
+ ?>
+    <a href="<?php echo $this->url('user-manager',
+             array('action'=>'edit', 'id' => $user->id));?>">Edit</a>
+    <a href="<?php echo $this->url('user-manager',
+             array('action'=>'delete', 'id' => $user->id));?>">Delete</a> 
+    
+ </div>
+
+<?php    
+}
+?>

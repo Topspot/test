@@ -1,0 +1,95 @@
+<?php 
+use Zend\Debug\Debug
+?>
+<div class="page-header">
+        <h1>
+                Create Client
+                
+        </h1>
+</div><!-- /.page-header -->
+<section class="login">
+    <?php if ($this->error): ?>
+        <p class="error">
+            There were one or more issues with your submission.
+            Please correct them as
+            indicated below.
+        </p>
+    <?php endif ?>
+    <?php
+//                          Debug::dump($this->form);exit;
+    $form = $this->form;
+    $form->prepare();
+    $form->setAttribute('action', $this->url(NULL, array('controller' => 'Client', 'action' => 'add')));
+    $form->setAttribute('method', 'post');
+    $form->setAttribute('class', 'form-horizontal');
+    $form->setAttribute('id', 'createClient');
+//   $this->setAttribute('id', 'add_form');
+    echo $this->form()->openTag($form);
+    ?>
+<div class="form-group">
+       <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Name </label>
+       <div class="col-sm-9">
+           <?php
+            echo $this->formElement($form->get('name'));
+            echo $this->formElementErrors($form->get('name'));
+         ?>
+       </div>
+</div> 
+<div class="form-group">
+       <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Website </label>
+       <div class="col-sm-9">
+           <?php
+            echo $this->formElement($form->get('website'));
+            echo $this->formElementErrors($form->get('website'));
+         ?>
+       </div>
+</div>        
+<div class="form-group">
+       <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Email </label>
+       <div class="col-sm-9">
+           <?php
+            echo $this->formElement($form->get('email'));
+            echo $this->formElementErrors($form->get('email'));
+         ?>
+       </div>
+</div> 
+<div class="form-group">
+       <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Phone </label>
+       <div class="col-sm-9">
+           <?php
+            echo $this->formElement($form->get('phone'));
+            echo $this->formElementErrors($form->get('phone'));
+         ?>
+       </div>
+</div> 
+ 
+<div class="form-group">
+       <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Call tracking </label>
+       <div class="col-sm-9">
+           <?php
+            echo $this->formElement($form->get('calltracking'));
+            echo $this->formElementErrors($form->get('calltracking'));
+         ?>
+           
+       </div>
+</div> 
+       <input name="calltracking" class="ace ace-switch ace-switch-5" type="checkbox" />
+<div class="clearfix form-actions">
+        <div class="col-md-offset-3 col-md-9">
+                       <?php echo $this->formElement($form->get('submit'));
+            echo $this->formElementErrors($form->get('submit')); ?>
+               
+
+                &nbsp; &nbsp; &nbsp;
+                <button class="btn" type="reset">
+                        <i class="icon-undo bigger-110"></i>
+                        Reset
+                </button>
+        </div>
+</div>
+
+        <div class="hr hr-24"></div>
+
+<?php echo $this->form()->closeTag() ?>
+</section>
+
