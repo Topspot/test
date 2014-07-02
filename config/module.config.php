@@ -7,6 +7,7 @@ return array(
             'Clients\Controller\Link' => 'Clients\Controller\LinkController',
             'Clients\Controller\Lead' => 'Clients\Controller\LeadController',
             'Clients\Controller\Transcript' => 'Clients\Controller\TranscriptController',
+            'Clients\Controller\Book' => 'Clients\Controller\BookController',
         ),
     ),
     'router' => array(
@@ -86,6 +87,20 @@ return array(
                     ),
                 ),
             ),
+            'book' => array(
+                'type' => 'Segment',
+                'options' => array(
+                    'route' => '/book[/:action][/:id]',
+                    'constraints' => array(
+                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'Clients\Controller\Book',
+                        'action' => 'index',
+                    ),
+                ),
+            ),
         ),
     ),
     'view_manager' => array(
@@ -94,6 +109,6 @@ return array(
         ),
     ),
     'module_config' => array(
-    'upload_location' => __DIR__ . '/../data/uploads',
+        'upload_location' => __DIR__ . '/../data/uploads',
     ),
 );

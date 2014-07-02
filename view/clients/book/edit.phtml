@@ -1,0 +1,57 @@
+<?php
+
+use Zend\Debug\Debug
+?>
+<div class="page-header">
+    <h1>
+        Update Book
+
+    </h1>
+</div><!-- /.page-header -->
+<section >
+<?php if ($this->error): ?>
+        <p class="error">
+            There were one or more issues with your submission.
+            Please correct them as
+            indicated below.
+        </p>
+    <?php endif ?>
+    <?php
+//                          Debug::dump($this->form);exit;
+    $form = $this->form;
+    $form->prepare();
+    $form->setAttribute('action', $this->url(NULL, array('controller' => 'Book', 'action' => 'edit', 'id' => $id)));
+    $form->setAttribute('method', 'post');
+    $form->setAttribute('class', 'form-horizontal');
+    $form->setAttribute('id', 'createBook');
+    echo $this->form()->openTag($form);
+    ?>
+<?php echo $this->formElement($form->get('id')); ?>
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Name </label>
+        <div class="col-sm-9">
+            <?php
+            echo $this->formElement($form->get('name'));
+            echo $this->formElementErrors($form->get('name'));
+            ?>
+        </div>
+    </div>            
+    <div class="clearfix form-actions">
+        <div class="col-md-offset-3 col-md-9">
+            <?php echo $this->formElement($form->get('submit'));
+            echo $this->formElementErrors($form->get('submit'));
+            ?>
+
+
+            &nbsp; &nbsp; &nbsp;
+            <button class="btn" type="reset">
+                <i class="icon-undo bigger-110"></i>
+                Reset
+            </button>
+        </div>
+    </div>
+    <div class="hr hr-24"></div>
+<?php echo $this->form()->closeTag() ?>
+</section>
+
+
