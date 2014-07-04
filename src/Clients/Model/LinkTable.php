@@ -54,7 +54,7 @@ class LinkTable {
 
     public function getLinkWebsite($id) {
         $id = (int) $id;
-        $rowset = $this->tableGateway->select(array('website_id' => $id))->toArray();
+        $rowset = $this->tableGateway->select(array('website_id' => $id));
 //        print_r($rowset);exit;
 //        $row = $rowset->current();
 //        if (!$rowset) {

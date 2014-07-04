@@ -8,7 +8,7 @@ $daterange=$session->offsetGet('daterange');
 <div class="row">
     <div class="col-xs-12"> 
         <?php
-//         print_r($message);;
+//         print_r($website_data);exit;
         if (isset($message) && $message != '') {
             if ($message == "Link has been successfully Deleted.") {
                 ?>
@@ -124,15 +124,15 @@ $daterange=$session->offsetGet('daterange');
                             ?>
                             <td class="center">
                                 <label>
-                                    <input type="checkbox" class="ace" data-id="<?php echo $link['id']; ?>" />
+                                    <input type="checkbox" class="ace" data-id="<?php echo $link->id; ?>" />
                                     <span class="lbl"></span>
                                 </label>
                             </td>
 
                             <td>
-                             <?php echo $link['date']; ?>
+                             <?php echo $link->date; ?>
                             </td>
-                            <td><?php echo $link['url']; ?></td>
+                            <td><?php echo $link->url; ?></td>
 
 
 
@@ -146,11 +146,11 @@ $daterange=$session->offsetGet('daterange');
                                         <i class="icon-zoom-in bigger-130"></i>
                                     </a>
 
-                                    <a class="green" href="<?php echo $this->url('link', array('action' => 'edit', 'id' => $link['id'])); ?>">
+                                    <a class="green" href="<?php echo $this->url('link', array('action' => 'edit', 'id' => $link->id)); ?>">
                                         <i class="icon-pencil bigger-130"></i>
                                     </a>
                                     <!--<a href="<?php //echo $this->url('clients', array('action' => 'dialoge', 'id' => $client->id));   ?>" class="tooltip-error" data-rel="tooltip" title="Dialoge">-->
-                                    <a href="#" role="button" class="red" onclick="deleterow(<?php echo $link['id']; ?>,'link');"> 
+                                    <a href="#" role="button" class="red" onclick="deleterow(<?php echo $link->id; ?>,'link');"> 
                                         <i class="icon-trash bigger-130"></i>
                                     </a>
                                 </div>
@@ -171,7 +171,7 @@ $daterange=$session->offsetGet('daterange');
                                             </li>
 
                                             <li>
-                                                <a href="<?php echo $this->url('link', array('action' => 'edit', 'id' => $link['id'])); ?>" class="tooltip-success" data-rel="tooltip" title="Edit">
+                                                <a href="<?php echo $this->url('link', array('action' => 'edit', 'id' => $link->id)); ?>" class="tooltip-success" data-rel="tooltip" title="Edit">
                                                     <span class="green">
                                                         <i class="icon-edit bigger-120"></i>
                                                     </span>

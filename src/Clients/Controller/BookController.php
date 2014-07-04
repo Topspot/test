@@ -107,10 +107,7 @@ class BookController extends AbstractActionController {
             $tableGateway = $this->getConnection();
             $post = $this->request->getPost();
             $post->website_id = $id;
-//            print_r($post);exit;
-//            $originalDate = $post->date;
-//            $newDate = date("Y-m-d", strtotime($originalDate));
-//            $post->date = $newDate;
+
             $book = new Book();
             $book->exchangeArray($post);
             $bookTable = new BookTable($tableGateway);
@@ -160,10 +157,7 @@ class BookController extends AbstractActionController {
 
             $form->bind($book);
             $form->setData($post);
-//            $originalDate = $post->date;
-//            $newDate = date("Y-m-d", strtotime($originalDate));
-//            $post->date = $newDate;
-//            $book->date = $post->date;
+
             $book->name = $post->name;
             $session->offsetSet('current_website_id', $book->website_id);
 
@@ -173,9 +167,7 @@ class BookController extends AbstractActionController {
             return $this->redirect()->toUrl('/book/index/' . $book_client_id);
         }
         $book = $bookTable->getBook($this->params()->fromRoute('id'));
-//        $originalDate = $book->date;
-//        $newDate = date("m/d/Y", strtotime($originalDate));
-//        $book->date = $newDate;
+
         $form->bind($book); //biding data to form
         $viewModel = new ViewModel(array(
             'form' => $form,

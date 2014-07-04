@@ -19,7 +19,17 @@ class LeadTable {
     public function saveLead(Lead $lead) {
 //                              Debug::dump($lead);exit;
         $data = array(
-            'name' => $lead->name,
+            'comments' => $lead->comments,
+            'caller_type' => $lead->caller_type,
+            'lead_date' => $lead->lead_date,
+            'lead_source' => $lead->lead_source,
+            'client_name' => $lead->client_name,
+            'website' => $lead->website,
+            'inc_phone' => $lead->inc_phone,
+            'call_time' => $lead->call_time,
+            'call_duration' => $lead->call_duration,
+            'lead_name' => $lead->lead_name,
+            'lead_email' => $lead->lead_email,
         );
         $id = (int) $lead->id;
         if ($id == 0) {

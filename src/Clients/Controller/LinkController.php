@@ -26,6 +26,7 @@ use Zend\Session\Container;
 class LinkController extends AbstractActionController {
 
     public function indexAction() {
+       
         $id = (int) $this->params()->fromRoute('id', 0);
         $session = new Container('link');
         $session->offsetSet('link_client_id', $id);
@@ -70,14 +71,14 @@ class LinkController extends AbstractActionController {
                 ));
             }
         } else {
+            
             $client_websites = $websiteTable->getWebsiteClients($id);
-
-            foreach ($client_websites as $value) {
-                $current_website_id = $value->id;
+            foreach ($client_websites as $value) {                
+                $current_website_id = $value->id;                
                 $current_website_link = $linkTable->getLinkWebsite($value->id);
+//                 print_r($linkTable->getLinkWebsite($value->id));exit;
                 break;
             }
-
             $viewModel = new ViewModel(array(
                 'client_websites' => $client_websites,
                 'website_data' => $current_website_link,
