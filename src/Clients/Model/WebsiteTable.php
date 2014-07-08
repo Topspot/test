@@ -20,13 +20,11 @@ class WebsiteTable {
         $data = array(
             'website' => $website->website,
             'clients_id' => $website->clients_id,
-
         );
 
         $id = (int) $website->id;
         if ($id == 0) {
             $this->tableGateway->insert($data);
-            
         } else {
             if ($this->getWebsite($id)) {
                 $this->tableGateway->update($data, array('id' => $id));
@@ -35,6 +33,7 @@ class WebsiteTable {
             }
         }
     }
+
     public function fetchAll() {
         $resultSet = $this->tableGateway->select();
         $resultSet->buffer();
@@ -50,11 +49,23 @@ class WebsiteTable {
         }
         return $row;
     }
+
+    public function getWebsiteByName($website) {
+
+        $id = (int) $id;
+        $rowset = $this->tableGateway->select(array('website' => $website));
+//        echo "ROW";
+//        print_r($rowset);exit;
+        $row = $rowset->current();
+        if (!$row) {
+            throw new \Exception("Could not find row $id");
+        }
+        return $row;
+    }
+
     public function getWebsiteClients($id) {
         $id = (int) $id;
         $rowset = $this->tableGateway->select(array('clients_id' => $id));
-//        print_r($rowset->);exit;
-//        $row = $rowset->current();
         if (!$rowset) {
             throw new \Exception("Could not find row $id");
         }
@@ -75,7 +86,8 @@ class WebsiteTable {
     public function deleteWebsite($id) {
         $this->tableGateway->delete(array('id' => $id));
     }
-      public function deleteWebsiteClient($id) {
+
+    public function deleteWebsiteClient($id) {
         $this->tableGateway->delete(array('clients_id' => $id));
     }
 

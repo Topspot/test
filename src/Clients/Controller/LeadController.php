@@ -3,7 +3,7 @@
 /**
  * Zend Framework (http://framework.zend.com/)
  *
- * @link      http://github.com/zendframework/ZendSkeletonApplication for the canonical source repository
+ * @lead      http://github.com/zendframework/ZendSkeletonApplication for the canonical source repository
  * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
@@ -16,40 +16,51 @@ use Zend\Debug\Debug;
 use Zend\Session\Container;
 use Clients\Model\Lead;
 use Clients\Model\LeadTable;
+use Clients\Model\Website;
+use Clients\Model\WebsiteTable;
 
 class LeadController extends AbstractActionController {
-    
-    public function leaddataAction() {
-        if($_POST){
-        $data=$_POST;
-         print_r($data);exit;
-        }
-        $tableGateway = $this->getConnection();
-        $leadTable = new LeadTable($tableGateway);
-        
-         $lead = new Lead();
-         $lead->comments=$data['comments'];
-         $lead->caller_type=$data['caller_type'];
-         $lead->lead_date=$data['lead_date'];
-         $lead->lead_source=$data['lead_source'];
-         $lead->client_name=$data['client_name'];
-         $lead->website=$data['website'];
-         $lead->inc_phone=$data['inc_phone'];
-         $lead->call_time=$data['call_time'];
-         $lead->call_duration=$data['call_duration'];
-         $lead->lead_name=$data['lead_name'];
-         $lead->lead_email=$data['lead_email'];
-//            $lead->exchangeArray($post);
 
-         $id = $leadTable->saveLead($lead);
-         print_r($id."Done");exit;  
-        
+    public function leaddataAction() {
+        if ($_POST) {
+            $data = $_POST;
+            $tableGatewayWebsite = $this->getConnectionWebsite();
+            $websiteTable = new WebsiteTable($tableGatewayWebsite);
+            $website_data = $websiteTable->getWebsiteByName($data['website']);
+            if ($website_data) {
+                $website_id = $website_data->id;
+            } else {
+                print_r("Cannot find any Website");
+                exit;
+            }
+            $tableGateway = $this->getConnection();
+            $leadTable = new LeadTable($tableGateway);
+
+            $lead = new Lead();
+            $lead->comments = $data['comments'];
+            $lead->website_id = $website_id;
+            $lead->caller_type = $data['caller_type'];
+            $date = explode('/', $data['lead_date']);
+            $lead->lead_date = $date[2] . '-' . $date[0] . '-' . $date[1];
+            $lead->lead_source = $data['lead_source'];
+            $lead->client_name = $data['client_name'];
+            $lead->website = $data['website'];
+            $lead->inc_phone = $data['inc_phone'];
+            $lead->call_time = $data['call_time'];
+            $lead->call_duration = $data['call_duration'];
+            $lead->lead_name = $data['lead_name'];
+            $lead->lead_email = $data['lead_email'];
+            $id = $leadTable->saveLead($lead);
+            return 0;
+        }
     }
-     public function indexAction() {
-       
+
+    public function indexAction() {
+
         $id = (int) $this->params()->fromRoute('id', 0);
-        $session = new Container('link');
-        $session->offsetSet('link_client_id', $id);
+       
+        $session = new Container('lead');
+        $session->offsetSet('lead_client_id', $id);
 
 
         if (!$id) {
@@ -67,41 +78,39 @@ class LeadController extends AbstractActionController {
         if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
             $current_website_id = $session->offsetGet('current_website_id');
             if ($session->offsetExists('from') && $session->offsetGet('from') != '') {
-              $current_website_link = $this->setDateRange();
-//                print_r($current_website_link);exit;
-            }else{
-                  $current_website_link = $leadTable->getLeadWebsite($current_website_id);
+                $current_website_lead = $this->setDateRange();
+//                print_r($current_website_lead);exit;
+            } else {
+                $current_website_lead = $leadTable->getLeadWebsite($current_website_id);
             }
-          
-                        
-            if (!empty($current_website_link)) {
+            if (!empty($current_website_lead)) {
 
                 $viewModel = new ViewModel(array(
                     'client_websites' => $websiteTable->getWebsiteClients($id),
                     'message' => $session->offsetGet('msg'),
-                    'website_data' => $current_website_link,
+                    'website_data' => $current_website_lead,
                     'current_website_id' => $current_website_id
                 ));
             } else {
                 $viewModel = new ViewModel(array(
                     'client_websites' => $websiteTable->getWebsiteClients($id),
                     'message' => $session->offsetGet('msg'),
-                    'website_data' => $current_website_link,
+                    'website_data' => $current_website_lead,
                     'current_website_id' => $current_website_id
                 ));
             }
         } else {
-            
+
             $client_websites = $websiteTable->getWebsiteClients($id);
-            foreach ($client_websites as $value) {                
-                $current_website_id = $value->id;                
-                $current_website_link = $leadTable->getLeadWebsite($value->id);
-//                 print_r($leadTable->getLeadWebsite($value->id));exit;
+
+            foreach ($client_websites as $value) {
+                $current_website_id = $value->id;
+                $current_website_lead = $leadTable->getLeadWebsite($value->id);                   
                 break;
             }
             $viewModel = new ViewModel(array(
                 'client_websites' => $client_websites,
-                'website_data' => $current_website_link,
+                'website_data' => $current_website_lead,
                 'current_website_id' => $current_website_id
             ));
         }
@@ -111,13 +120,13 @@ class LeadController extends AbstractActionController {
 
     public function addAction() {
         $id = (int) $this->params()->fromRoute('id', 0);
-        $session = new Container('link');
-        $lead_client_id = $session->offsetGet('link_client_id');
+        $session = new Container('lead');
+        $lead_client_id = $session->offsetGet('lead_client_id');
         $session->offsetSet('current_website_id', $id);
 
         if (!$id) {
             return $this->redirect()->toRoute(NULL, array(
-//                        'controller' => 'link',
+//                        'controller' => 'lead',
                         'action' => 'index',
                         'id' => $lead_client_id
             ));
@@ -136,7 +145,7 @@ class LeadController extends AbstractActionController {
 
             $id = $leadTable->saveLead($lead);
             $session->offsetSet('msg', "Lead has been successfully Added.");
-            return $this->redirect()->toUrl('/link/index/' . $lead_client_id);
+            return $this->redirect()->toUrl('/lead/index/' . $lead_client_id);
         }
 
 
@@ -146,18 +155,18 @@ class LeadController extends AbstractActionController {
 
     public function changewebsiteAction() {
         $website_id = (int) $this->params()->fromRoute('id', 0);
-        $session = new Container('link');
-        $lead_client_id = $session->offsetGet('link_client_id');
+        $session = new Container('lead');
+        $lead_client_id = $session->offsetGet('lead_client_id');
         $session->offsetSet('current_website_id', $website_id);
         $session->offsetSet('msg', "");
-        return $this->redirect()->toUrl('/link/index/' . $lead_client_id);
+        return $this->redirect()->toUrl('/lead/index/' . $lead_client_id);
 //         print_r($website_id);exit;
     }
 
     public function editAction() {
         $id = (int) $this->params()->fromRoute('id', 0);
-        $session = new Container('link');
-        $lead_client_id = $session->offsetGet('link_client_id');
+        $session = new Container('lead');
+        $lead_client_id = $session->offsetGet('lead_client_id');
 //        $session->offsetSet('current_website_id', $id);
         $session->offsetSet('msg', "Lead has been successfully Updated.");
         if (!$id) {
@@ -189,7 +198,7 @@ class LeadController extends AbstractActionController {
             $leadTable->saveLead($lead);
 
 
-            return $this->redirect()->toUrl('/link/index/' . $lead_client_id);
+            return $this->redirect()->toUrl('/lead/index/' . $lead_client_id);
         }
         $lead = $leadTable->getLead($this->params()->fromRoute('id'));
         $originalDate = $lead->date;
@@ -244,17 +253,17 @@ class LeadController extends AbstractActionController {
         echo json_encode(array('data' => (array) $data));
         exit();
     }
-   
-    public function setDateRange(){
-        $session = new Container('link');
-        $from =$session->offsetGet('from');
-        $till =$session->offsetGet('till');
-        $website_id =$session->offsetGet('current_website_id');
-        
+
+    public function setDateRange() {
+        $session = new Container('lead');
+        $from = $session->offsetGet('from');
+        $till = $session->offsetGet('till');
+        $website_id = $session->offsetGet('current_website_id');
+
         $tableGateway = $this->getConnection();
         $leadTable = new LeadTable($tableGateway);
-        $website_links_data = $leadTable->dateRange($from, $till, $website_id);
-        return $website_links_data;
+        $website_leads_data = $leadTable->dateRange($from, $till, $website_id);
+        return $website_leads_data;
     }
 
     public function daterangeAction() {      // finding daterange data from database
@@ -270,25 +279,25 @@ class LeadController extends AbstractActionController {
             $day = rtrim($parts[1], ',');
             $all_ranges[] = $parts[2] . '-' . $month . '-' . $day;
         }
-
-        $session = new Container('link');
+        $session = new Container('lead');
         $session->offsetSet('current_website_id', $website_id);
         $session->offsetSet('from', $all_ranges[0]);
         $session->offsetSet('till', $all_ranges[1]);
         $session->offsetSet('daterange', $daterange);
-        $lead_client_id = $session->offsetGet('link_client_id');
-        return $this->redirect()->toUrl('/link/index/' . $lead_client_id);
+        $lead_client_id = $session->offsetGet('lead_client_id');
+        return $this->redirect()->toUrl('/lead/index/' . $lead_client_id);
     }
 
-    public function setmessageAction() {  // set message for delete client link
-        $session = new Container('link');
-        $lead_client_id = $session->offsetGet('link_client_id');
+    public function setmessageAction() {  // set message for delete client lead
+        $session = new Container('lead');
+        $lead_client_id = $session->offsetGet('lead_client_id');
         $website_id = (int) $this->params()->fromRoute('id', 0);
         $session->offsetSet('current_website_id', $website_id);
         $session->offsetSet('msg', "Lead has been successfully Deleted.");
 //        print_r($website_id);exit;
-        return $this->redirect()->toUrl('/link/index/' . $lead_client_id);
+        return $this->redirect()->toUrl('/lead/index/' . $lead_client_id);
     }
+
     public function getConnection() {
         $sm = $this->getServiceLocator();
         $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
@@ -298,8 +307,8 @@ class LeadController extends AbstractActionController {
         $tableGateway = new \Zend\Db\TableGateway\TableGateway('leads', $dbAdapter, null, $resultSetPrototype);
         return $tableGateway;
     }
-    
-     public function getConnectionWebsite() {        // set connection to Website table
+
+    public function getConnectionWebsite() {        // set connection to Website table
         $sm = $this->getServiceLocator();
         $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
         $resultSetPrototype = new \Zend\Db\ResultSet\ResultSet();

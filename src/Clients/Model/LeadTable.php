@@ -7,7 +7,6 @@ use Zend\Db\ResultSet\ResultSet;
 use Zend\Db\TableGateway\TableGateway;
 use Zend\Debug\Debug;
 
-
 class LeadTable {
 
     protected $tableGateway;
@@ -32,28 +31,24 @@ class LeadTable {
             'lead_email' => $lead->lead_email,
         );
         $id = (int) $lead->id;
-        if ($id == 0) {
+        if ($id == 0 || $id = '') {
             $this->tableGateway->insert($data);
-            
+
             $id = $this->tableGateway->lastInsertValue;
-//            $id->buffer();
-//            $id->next()();
             return $id;
         } else {
             if ($this->getLead($id)) {
-//                                                                                       echo '<pre>';
-//                        print_r($data);
-//                        echo '</pre>';
-//                        exit;
+
                 $this->tableGateway->update($data, array('id' => $id));
             } else {
                 throw new \Exception('Lead ID does not exist');
             }
         }
     }
+
     public function fetchAll() {
         $resultSet = $this->tableGateway->select();
-         $resultSet->buffer();
+        $resultSet->buffer();
         return $resultSet;
     }
 
@@ -65,6 +60,16 @@ class LeadTable {
             throw new \Exception("Could not find row $id");
         }
         return $row;
+    }
+
+    public function getLeadWebsite($id) {
+        $id = (int) $id;
+        $rowset = $this->tableGateway->select(array('website_id' => $id));
+        foreach($rowset as $row){
+            print_r($row);
+                        exit();
+        }
+        return $rowset;
     }
 
     public function getLeadByEmail($leadEmail) {
