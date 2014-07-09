@@ -6,22 +6,23 @@ namespace Clients\Form;
 
 use Zend\Form\Form;
 
-class AddLeadForm extends Form {
+class EditLeadForm extends Form {
 
     public function __construct($name = null) {
-        parent::__construct('Add');
+        parent::__construct('Edit');
         $this->setAttribute('method', 'post');
         $this->setAttribute('enctype', 'multipart/formdata');
         $this->setAttribute('class', 'form-horizontal');
         $this->setAttribute('id', 'createLead');
-        
+
         $this->add(array(
-            'name' => 'website_id',
+            'name' => 'id',
             'attributes' => array(
                 'type' => 'hidden',
             ),
         ));
-         $this->add(array(
+
+       $this->add(array(
             'type' => 'Zend\Form\Element\Select',
             'name' => 'caller_type',
             'options' => array(

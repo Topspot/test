@@ -1,8 +1,112 @@
-<?php
+<?php 
+use Zend\Debug\Debug
+?>
+<div class="page-header">
+        <h1>
+                Update Lead
+                
+        </h1>
+</div><!-- /.page-header -->
+<section >
+    <?php if ($this->error): ?>
+        <p class="error">
+            There were one or more issues with your submission.
+            Please correct them as
+            indicated below.
+        </p>
+    <?php endif ?>
+    <?php
+//                          Debug::dump($this->form);exit;
+    $form = $this->form;
+    $form->prepare();
+    $form->setAttribute('action', $this->url(NULL, array('controller' => 'Lead', 'action' => 'edit','id' => $id)));
+    $form->setAttribute('method', 'post');
+    $form->setAttribute('class', 'form-horizontal');
+       $form->setAttribute('id', 'createLead');
 
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+    echo $this->form()->openTag($form);
+    ?>
+        <?php echo $this->formElement($form->get('id')); ?>
+          
+ <div class="form-group">
+       <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Type </label>
+       <div class="col-sm-9">
+           <?php
+            echo $this->formElement($form->get('caller_type'));
+            echo $this->formElementErrors($form->get('caller_type'));
+         ?>
+       </div>
+</div>         
+<div class="form-group">
+       <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Date </label>
+            <div class="input-group input-group-sm col-sm-9">
+                   <?php 
+                   echo $this->formElement($form->get('lead_date'));
+                   echo $this->formElementErrors($form->get('lead_date'));
+             ?>
+   
+            </div>
+ </div>
+ <div class="form-group">
+       <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Lead Source </label>
+       <div class="col-sm-9">
+           <?php
+            echo $this->formElement($form->get('lead_source'));
+            echo $this->formElementErrors($form->get('lead_source'));
+         ?>
+       </div>
+</div>      
+ <div class="form-group">
+       <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Incoming Phone </label>
+       <div class="col-sm-9">
+           <?php
+            echo $this->formElement($form->get('inc_phone'));
+            echo $this->formElementErrors($form->get('inc_phone'));
+         ?>
+       </div>
+</div>      
+ <div class="form-group">
+       <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Call Duration </label>
+       <div class="col-sm-9">
+           <?php
+            echo $this->formElement($form->get('call_duration'));
+            echo $this->formElementErrors($form->get('call_duration'));
+         ?>
+       </div>
+</div>      
+ <div class="form-group">
+       <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Name </label>
+       <div class="col-sm-9">
+           <?php
+            echo $this->formElement($form->get('lead_name'));
+            echo $this->formElementErrors($form->get('lead_name'));
+         ?>
+       </div>
+</div>      
+ <div class="form-group">
+       <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> email </label>
+       <div class="col-sm-9">
+           <?php
+            echo $this->formElement($form->get('lead_email'));
+            echo $this->formElementErrors($form->get('lead_email'));
+         ?>
+       </div>
+</div>           
+ 
+<div class="clearfix form-actions">
+        <div class="col-md-offset-3 col-md-9">
+                       <?php echo $this->formElement($form->get('submit'));
+            echo $this->formElementErrors($form->get('submit')); ?>
+               
 
+                &nbsp; &nbsp; &nbsp;
+                <button class="btn" type="reset">
+                        <i class="icon-undo bigger-110"></i>
+                        Reset
+                </button>
+        </div>
+</div>
+
+        <div class="hr hr-24"></div>
+    <?php echo $this->form()->closeTag() ?>
+</section>

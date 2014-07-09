@@ -18,6 +18,10 @@ use Clients\Model\Lead;
 use Clients\Model\LeadTable;
 use Clients\Model\Website;
 use Clients\Model\WebsiteTable;
+use Clients\Form\AddLeadForm;
+use Clients\Form\AddLeadFilter;
+use Clients\Form\EditLeadForm;
+use Clients\Form\EditLeadFilter;
 
 class LeadController extends AbstractActionController {
 
@@ -58,7 +62,7 @@ class LeadController extends AbstractActionController {
     public function indexAction() {
 
         $id = (int) $this->params()->fromRoute('id', 0);
-       
+
         $session = new Container('lead');
         $session->offsetSet('lead_client_id', $id);
 
@@ -105,7 +109,7 @@ class LeadController extends AbstractActionController {
 
             foreach ($client_websites as $value) {
                 $current_website_id = $value->id;
-                $current_website_lead = $leadTable->getLeadWebsite($value->id);                   
+                $current_website_lead = $leadTable->getLeadWebsite($value->id);
                 break;
             }
             $viewModel = new ViewModel(array(
@@ -120,6 +124,7 @@ class LeadController extends AbstractActionController {
 
     public function addAction() {
         $id = (int) $this->params()->fromRoute('id', 0);
+
         $session = new Container('lead');
         $lead_client_id = $session->offsetGet('lead_client_id');
         $session->offsetSet('current_website_id', $id);
@@ -131,14 +136,19 @@ class LeadController extends AbstractActionController {
                         'id' => $lead_client_id
             ));
         }
+
         $form = new AddLeadForm();
+
         if ($this->request->isPost()) {
             $tableGateway = $this->getConnection();
             $post = $this->request->getPost();
+
             $post->website_id = $id;
-            $originalDate = $post->date;
+
+            $originalDate = $post->lead_date;
             $newDate = date("Y-m-d", strtotime($originalDate));
-            $post->date = $newDate;
+            $post->lead_date = $newDate;
+//              print_r($post);exit;
             $lead = new Lead();
             $lead->exchangeArray($post);
             $leadTable = new LeadTable($tableGateway);
@@ -148,7 +158,7 @@ class LeadController extends AbstractActionController {
             return $this->redirect()->toUrl('/lead/index/' . $lead_client_id);
         }
 
-
+        //print_r('here');exit;
         $viewModel = new ViewModel(array('form' => $form, 'id' => $id));
         return $viewModel;
     }
@@ -188,16 +198,19 @@ class LeadController extends AbstractActionController {
 
             $form->bind($lead);
             $form->setData($post);
-            $originalDate = $post->date;
+//            print_r($post);exit;
+            $originalDate = $post->lead_date;
             $newDate = date("Y-m-d", strtotime($originalDate));
-            $post->date = $newDate;
-            $lead->date = $post->date;
-            $lead->url = $post->url;
+            $post->lead_date = $newDate;
+            $lead->caller_type = $post->caller_type;
+            $lead->lead_source = $post->lead_source;
+            $lead->inc_phone = $post->inc_phone;
+            $lead->call_duration = $post->call_duration;
+            $lead->lead_name = $post->lead_name;
+            $lead->lead_email = $post->lead_email;
             $session->offsetSet('current_website_id', $lead->website_id);
-
+//             print_r($lead);exit;
             $leadTable->saveLead($lead);
-
-
             return $this->redirect()->toUrl('/lead/index/' . $lead_client_id);
         }
         $lead = $leadTable->getLead($this->params()->fromRoute('id'));
@@ -226,7 +239,6 @@ class LeadController extends AbstractActionController {
         //delete Lead for a client website
         $tableGateway = $this->getConnection();
         $leadTable = new LeadTable($tableGateway);
-//        $data=$leadTable->getLead($id);
         $leadTable->deleteLead($id);
 
 
@@ -247,9 +259,6 @@ class LeadController extends AbstractActionController {
         $tableGateway = $this->getConnection();
         $leadTable = new LeadTable($tableGateway);
         $data = $leadTable->getLeadWebsite($id);
-
-//         Debug::dump($value->url);exit;
-
         echo json_encode(array('data' => (array) $data));
         exit();
     }

@@ -3,7 +3,7 @@
 use Zend\Session\Container;
 
 $session = new Container('lead');
-$daterange = $session->offsetGet('daterange');
+$daterange=$session->offsetGet('daterange');
 ?>
 <div class="row">
     <div class="col-xs-12"> 
@@ -31,23 +31,25 @@ $daterange = $session->offsetGet('daterange');
                     <i class="icon-ok green"></i>
                     <?php echo $message; ?>
                 </div> 
-                <?php
+            <?php
             }
         }
         ?>    
         <h3 class="header smaller lighter blue current-websiteid" data-id="">Leads</h3>
+        
         <div class="row ">
+           
             <div class="well" style="overflow: auto">
 
-                <div id="reportrange" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
-                    <input class="form-control get-date-range hidden" name="date-range-picker" id="date-range-picker" type="text" data-date-format="dd-mm-yyyy" />
-                    <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
-                    <span></span> <b class="caret"></b>
-                </div>
-            </div>
+               <div id="reportrange" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
+                 <input class="form-control get-date-range hidden" name="date-range-picker" id="date-range-picker" type="text" data-date-format="dd-mm-yyyy" />
+                   <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
+                   <span></span> <b class="caret"></b>
+               </div>
+            </div>             
         </div>    
         <div class="table-header">
-            <a href="/lead/add/<?php echo $current_website_id; ?>" id="addbuttonlead" class="btn btn-primary">Add New Lead</a>
+            <a href="/lead/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Lead</a>
             <a href="#" class="btn btn-danger pull-right multiple-delete" data-id="lead">Delete Selected Leads</a>
             <div class="pull-right">
 
@@ -58,8 +60,7 @@ $daterange = $session->offsetGet('daterange');
                             if ($current_website_id == $website->id) {
                                 ?>
                                 <option value="<?php echo $website->id ?>"><?php echo $website->website ?></option>
-                                <?php
-                            }
+                            <?php }
                         }
                         ?>
                         <?php
@@ -67,8 +68,7 @@ $daterange = $session->offsetGet('daterange');
                             if ($current_website_id != $website->id) {
                                 ?>                        
                                 <option value="<?php echo $website->id ?>"><?php echo $website->website ?></option>
-                                <?php
-                            }
+                            <?php }
                         }
                         ?>
                     <?php } else { ?>
@@ -94,44 +94,39 @@ $daterange = $session->offsetGet('daterange');
                                 <input type="checkbox" class="ace" data-id="all" />
                                 <span class="lbl"></span>
                             </label>
-                        </th>
-                        <th>Comments</th>     
+                        </th>  
                         <th>Caller Type</th>     
                         <th>Lead Date</th>
-                        <th>Lead Source</th>
-                        <th>Client Name & Website</th>                                     
+                        <th>Lead Source</th>                           
                         <th>Incomming Ph</th>
-                        <th>Call Time</th>
                         <th>Call Duration</th>
                         <th>Leads Name</th>
                         <th>Leads email</th>
-                        <th></th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
 
                 <tbody class="leadtable">
                     <tr>
+
                         <?php
-//                         print_r($website_data);exit;
-                        foreach ($website_data as $lead) {
-//                                                     print_r($lead->comments);exit;                            ?>
+//                         print_r($website_data);
+                        foreach ($website_data as $lead) {                         
+                            ?>
                             <td class="center">
                                 <label>
                                     <input type="checkbox" class="ace" data-id="<?php echo $lead->id; ?>" />
                                     <span class="lbl"></span>
                                 </label>
                             </td>
-
-                            <td><?php echo $lead->comments; ?></td>
                             <td><?php echo $lead->caller_type; ?></td>
                             <td><?php echo $lead->lead_date; ?></td>
                             <td><?php echo $lead->lead_source; ?></td>
-                            <td><?php echo $lead->client_name . ' ' . $lead->website; ?></td>
                             <td><?php echo $lead->inc_phone; ?></td>
-                            <td><?php echo $lead->call_time; ?></td>
                             <td><?php echo $lead->call_duration; ?></td>
                             <td><?php echo $lead->lead_name; ?></td>
                             <td><?php echo $lead->lead_email; ?></td>
+
                             <td>
                                 <div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
                                     <a class="blue" href="#">
@@ -141,8 +136,8 @@ $daterange = $session->offsetGet('daterange');
                                     <a class="green" href="<?php echo $this->url('lead', array('action' => 'edit', 'id' => $lead->id)); ?>">
                                         <i class="icon-pencil bigger-130"></i>
                                     </a>
-                                    <!--<a href="<?php //echo $this->url('clients', array('action' => 'dialoge', 'id' => $client->id));     ?>" class="tooltip-error" data-rel="tooltip" title="Dialoge">-->
-                                    <a href="#" role="button" class="red" onclick="deleterow(<?php echo $lead->id; ?>, 'lead');"> 
+                                    <!--<a href="<?php //echo $this->url('clients', array('action' => 'dialoge', 'id' => $client->id));   ?>" class="tooltip-error" data-rel="tooltip" title="Dialoge">-->
+                                    <a href="#" role="button" class="red" onclick="deleterow(<?php echo $lead->id; ?>,'lead');"> 
                                         <i class="icon-trash bigger-130"></i>
                                     </a>
                                 </div>
@@ -182,7 +177,7 @@ $daterange = $session->offsetGet('daterange');
                                 </div>
                             </td>
                         </tr>
-                    <?php } ?>              
+                  <?php } ?>              
                 </tbody>
             </table>
         </div>
@@ -227,4 +222,3 @@ $session->offsetSet('from', '');
 $session->offsetSet('till', '');
 $session->offsetSet('msg', '');
 ?>
-
