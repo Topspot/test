@@ -7,6 +7,7 @@ use Zend\Db\ResultSet\ResultSet;
 use Zend\Db\TableGateway\TableGateway;
 use Zend\Debug\Debug;
 use Zend\Db\Sql\Where;
+use Zend\Authentication\AuthenticationService;
 
 class LeadTable {
 
@@ -17,22 +18,27 @@ class LeadTable {
     }
 
     public function saveLead(Lead $lead) {
-
-        $data = array(
-//            'comments' => $lead->comments,
-            'caller_type' => $lead->caller_type,
-            'lead_date' => $lead->lead_date,
-            'lead_source' => $lead->lead_source,
-//            'client_name' => $lead->client_name,
-//            'website' => $lead->website,
-            'inc_phone' => $lead->inc_phone,
-            'call_time' => $lead->call_time,
-            'call_duration' => $lead->call_duration,
-            'lead_name' => $lead->lead_name,
-            'lead_email' => $lead->lead_email,
-            'website_id' => $lead->website_id,
-        );
-
+        $auth = new AuthenticationService();
+        if ($auth->getIdentity()->roles_id == 2) {
+            $data = array(
+                'caller_type' => $lead->caller_type,
+                'lead_name' => $lead->lead_name,
+                'lead_email' => $lead->lead_email,
+                'website_id' => $lead->website_id,
+            );
+        } else {
+            $data = array(
+                'caller_type' => $lead->caller_type,
+                'lead_date' => $lead->lead_date,
+                'lead_source' => $lead->lead_source,
+                'inc_phone' => $lead->inc_phone,
+                'call_time' => $lead->call_time,
+                'call_duration' => $lead->call_duration,
+                'lead_name' => $lead->lead_name,
+                'lead_email' => $lead->lead_email,
+                'website_id' => $lead->website_id,
+            );
+        }
         $id = (int) $lead->id;
 //         Debug::dump($id);
 //         Debug::dump($lead->id);exit;

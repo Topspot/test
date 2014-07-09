@@ -14,9 +14,7 @@ use Zend\Mvc\Controller\AbstractActionController;
 use Zend\Authentication\Result;
 use Zend\Authentication\AuthenticationService;
 use Zend\Authentication\Storage\Session as SessionStorage;
-
 use Zend\Db\Adapter\Adapter as DbAdapter;
-
 use Zend\Authentication\Adapter\DbTable as AuthAdapter;
 use Zend\View\Model\ViewModel;
 use Clients\Form\AddForm;
@@ -32,148 +30,159 @@ use Zend\Session\Container;
 class IndexController extends AbstractActionController {
 
     public function indexAction() {
-//        $tableGateway=$this->getConnection();
-//        $clientTable = new ClientTable($tableGateway);
-//        $viewModel = new ViewModel(array('users' => $clientTable->fetchAll()));
-        return new ViewModel();
+        if ($user = $this->identity()) {
+            return new ViewModel();
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
     }
 
     public function listAction() {
-        
-     if ($user = $this->identity()) {
-         echo 'Logged in as';
-     } else {
-         echo 'Not logged in';
-     }
-        $session = new Container('link');
-        $delete_msg = $session->offsetGet('delete_user_msg');
-        $tableGateway = $this->getConnection();
-        $clientTable = new ClientTable($tableGateway);
-        $tableGatewayWebsite = $this->getConnectionWebsite();
-        $websiteTable = new WebsiteTable($tableGatewayWebsite);
+        if ($user = $this->identity()) {
+            $session = new Container('link');
+            $delete_msg = $session->offsetGet('delete_user_msg');
+            $tableGateway = $this->getConnection();
+            $clientTable = new ClientTable($tableGateway);
+            $tableGatewayWebsite = $this->getConnectionWebsite();
+            $websiteTable = new WebsiteTable($tableGatewayWebsite);
 
-        if (isset($delete_msg) && $delete_msg != '') {
-            $viewModel = new ViewModel(array(
-                'clients' => $clientTable->fetchAll(),
-                'websites' => $websiteTable->fetchAll(),
-                'message' => $delete_msg
-            ));
+            if (isset($delete_msg) && $delete_msg != '') {
+                $viewModel = new ViewModel(array(
+                    'clients' => $clientTable->fetchAll(),
+                    'websites' => $websiteTable->fetchAll(),
+                    'message' => $delete_msg
+                ));
+            } else {
+                $viewModel = new ViewModel(array(
+                    'clients' => $clientTable->fetchAll(),
+                    'websites' => $websiteTable->fetchAll()
+                ));
+            }
+
+            return $viewModel;
         } else {
-            $viewModel = new ViewModel(array(
-                'clients' => $clientTable->fetchAll(),
-                'websites' => $websiteTable->fetchAll()
-            ));
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
-
-        return $viewModel;
     }
 
     public function addAction() {
-        $form = new AddForm();
-        if ($this->request->isPost()) {
-            $tableGateway = $this->getConnection();
-            $post = $this->request->getPost();
-            $client = new Client();
+        if ($user = $this->identity()) {
+            $form = new AddForm();
+            if ($this->request->isPost()) {
+                $tableGateway = $this->getConnection();
+                $post = $this->request->getPost();
+                $client = new Client();
 
 
-            $client->exchangeArray($post);
-            $clientTable = new ClientTable($tableGateway);
-            $id = $clientTable->saveClient($client);
+                $client->exchangeArray($post);
+                $clientTable = new ClientTable($tableGateway);
+                $id = $clientTable->saveClient($client);
 //            $id->buffer();
-            $tableGatewayWebsite = $this->getConnectionWebsite();
-            $websiteTable = new WebsiteTable($tableGatewayWebsite);
-            $this->insertWebsiteAction($post->website, $id, $websiteTable);
+                $tableGatewayWebsite = $this->getConnectionWebsite();
+                $websiteTable = new WebsiteTable($tableGatewayWebsite);
+                $this->insertWebsiteAction($post->website, $id, $websiteTable);
 
-            $session = new Container('link');
-            $session->offsetSet('delete_user_msg', "User has been Created");
-            return $this->redirect()->toRoute(NULL, array(
-                        'controller' => 'index',
-                        'action' => 'list'
-            ));
+                $session = new Container('link');
+                $session->offsetSet('delete_user_msg', "User has been Created");
+                return $this->redirect()->toRoute(NULL, array(
+                            'controller' => 'index',
+                            'action' => 'list'
+                ));
+            }
+
+
+            $viewModel = new ViewModel(array('form' => $form));
+            return $viewModel;
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
-
-
-        $viewModel = new ViewModel(array('form' => $form));
-        return $viewModel;
     }
 
     // insert multiple website
     public function insertWebsiteAction($client_website, $id, $websiteTable) {
-        $website = new Website();
-        $multiple_websites = explode(",", $client_website);
+        if ($user = $this->identity()) {
+            $website = new Website();
+            $multiple_websites = explode(",", $client_website);
 
-        foreach ($multiple_websites as $web) {
-            $data = array(
-                'clients_id' => $id,
-                'website' => $web,
-            );
+            foreach ($multiple_websites as $web) {
+                $data = array(
+                    'clients_id' => $id,
+                    'website' => $web,
+                );
 
-            $website->exchangeArray($data);
-            $websiteTable->saveWebsite($website);
+                $website->exchangeArray($data);
+                $websiteTable->saveWebsite($website);
+            }
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
     }
 
     public function editAction() {
-        $id = (int) $this->params()->fromRoute('id', 0);
-        if (!$id) {
-            return $this->redirect()->toRoute(NULL, array(
-                        'controller' => 'index',
-                        'action' => 'add'
-            ));
-        }
-        $tableGateway = $this->getConnection();
-        $clientTable = new ClientTable($tableGateway);
+        if ($user = $this->identity()) {
+            $id = (int) $this->params()->fromRoute('id', 0);
+            if (!$id) {
+                return $this->redirect()->toRoute(NULL, array(
+                            'controller' => 'index',
+                            'action' => 'add'
+                ));
+            }
+            $tableGateway = $this->getConnection();
+            $clientTable = new ClientTable($tableGateway);
 
-        $tableGatewayWebsite = $this->getConnectionWebsite();
-        $websiteTable = new WebsiteTable($tableGatewayWebsite);
+            $tableGatewayWebsite = $this->getConnectionWebsite();
+            $websiteTable = new WebsiteTable($tableGatewayWebsite);
 
-        $form = new EditForm();
-        if ($this->request->isPost()) {
+            $form = new EditForm();
+            if ($this->request->isPost()) {
 
-            $post = $this->request->getPost();
-            //saving Client data table
-            $client = $clientTable->getClient($post->id);
+                $post = $this->request->getPost();
+                //saving Client data table
+                $client = $clientTable->getClient($post->id);
+
+                $form->bind($client);
+                $form->setData($post);
+                $client->name = $post->name;
+                $client->phone = $post->phone;
+                $client->email = $post->email;
+                $client->calltracking = $post->calltracking;
+                $clientTable->saveClient($client);
+
+                //delete all website with this id
+                $websiteTable->deleteWebsiteClient($post->id);
+                //inserting Edited value in database
+                $this->insertWebsiteAction($post->website, $post->id, $websiteTable);
+
+
+                $session = new Container('link');
+                $session->offsetSet('delete_user_msg', "User has been Updated");
+                return $this->redirect()->toRoute(NULL, array(
+                            'controller' => 'index',
+                            'action' => 'list'
+                ));
+            }
+            $client = $websiteTable->getWebsiteClients($this->params()->fromRoute('id'));  //get websites fromclients_id
+            foreach ($client as $c) {
+
+                $all_websites .="$c->website ";
+            }
+            $all_webs = str_replace(" ", ",", $all_websites); //making string of websites
+            $all_web = preg_replace('/,[^,]*$/', '', $all_webs); //remove the last comma
+
+            $client = $clientTable->getClient($this->params()->fromRoute('id'));
 
             $form->bind($client);
-            $form->setData($post);
-            $client->name = $post->name;
-            $client->phone = $post->phone;
-            $client->email = $post->email;
-            $client->calltracking = $post->calltracking;
-            $clientTable->saveClient($client);
-
-            //delete all website with this id
-            $websiteTable->deleteWebsiteClient($post->id);
-            //inserting Edited value in database
-            $this->insertWebsiteAction($post->website, $post->id, $websiteTable);
 
 
-            $session = new Container('link');
-            $session->offsetSet('delete_user_msg', "User has been Updated");
-            return $this->redirect()->toRoute(NULL, array(
-                        'controller' => 'index',
-                        'action' => 'list'
+            $viewModel = new ViewModel(array(
+                'form' => $form,
+                'client_id' => $this->params()->fromRoute('id'),
+                'website' => $all_web,
             ));
+            return $viewModel;
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
-        $client = $websiteTable->getWebsiteClients($this->params()->fromRoute('id'));  //get websites fromclients_id
-        foreach ($client as $c) {
-
-            $all_websites .="$c->website ";
-        }
-        $all_webs = str_replace(" ", ",", $all_websites); //making string of websites
-        $all_web = preg_replace('/,[^,]*$/', '', $all_webs); //remove the last comma
-
-        $client = $clientTable->getClient($this->params()->fromRoute('id'));
-
-        $form->bind($client);
-
-
-        $viewModel = new ViewModel(array(
-            'form' => $form,
-            'client_id' => $this->params()->fromRoute('id'),
-            'website' => $all_web,
-        ));
-        return $viewModel;
     }
 
     public function deleteAction() {
@@ -201,14 +210,17 @@ class IndexController extends AbstractActionController {
     }
 
     public function setmessageAction() {
+        if ($user = $this->identity()) {
+            $session = new Container('link');
+            $session->offsetSet('delete_user_msg', "User has been Deleted");
 
-        $session = new Container('link');
-        $session->offsetSet('delete_user_msg', "User has been Deleted");
-
-        return $this->redirect()->toRoute(NULL, array(
-                    'controller' => 'index',
-                    'action' => 'list'
-        ));
+            return $this->redirect()->toRoute(NULL, array(
+                        'controller' => 'index',
+                        'action' => 'list'
+            ));
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
     }
 
     public function getConnection() {

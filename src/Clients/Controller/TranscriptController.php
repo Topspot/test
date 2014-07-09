@@ -27,189 +27,174 @@ use Zend\Session\Container;
 class TranscriptController extends AbstractActionController {
 
     public function indexAction() {
-        $id = (int) $this->params()->fromRoute('id', 0);
-        $session = new Container('transcript');
-        $session->offsetSet('transcript_client_id', $id);
+        if ($user = $this->identity()) {
+            $id = (int) $this->params()->fromRoute('id', 0);
+            $session = new Container('transcript');
+            $session->offsetSet('transcript_client_id', $id);
 
 
-        if (!$id) {
-            return $this->redirect()->toRoute(NULL, array(
-                        'controller' => 'index',
-                        'action' => 'list'
-            ));
-        }
-        $tableGatewayWebsite = $this->getConnectionWebsite();
-        $websiteTable = new WebsiteTable($tableGatewayWebsite);
+            if (!$id) {
+                return $this->redirect()->toRoute(NULL, array(
+                            'controller' => 'index',
+                            'action' => 'list'
+                ));
+            }
+            $tableGatewayWebsite = $this->getConnectionWebsite();
+            $websiteTable = new WebsiteTable($tableGatewayWebsite);
 
-        $tableGateway = $this->getConnection();
-        $transcriptTable = new TranscriptTable($tableGateway);
+            $tableGateway = $this->getConnection();
+            $transcriptTable = new TranscriptTable($tableGateway);
 
-        if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
-            $current_website_id = $session->offsetGet('current_website_id');
-            if ($session->offsetExists('from') && $session->offsetGet('from') != '') {
-                $current_website_transcript = $this->setDateRange();
+            if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
+                $current_website_id = $session->offsetGet('current_website_id');
+                if ($session->offsetExists('from') && $session->offsetGet('from') != '') {
+                    $current_website_transcript = $this->setDateRange();
 //                print_r($current_website_transcript);exit;
+                } else {
+                    $current_website_transcript = $transcriptTable->getTranscriptWebsite($current_website_id);
+                }
+
+
+                if (!empty($current_website_transcript)) {
+
+                    $viewModel = new ViewModel(array(
+                        'client_websites' => $websiteTable->getWebsiteClients($id),
+                        'message' => $session->offsetGet('msg'),
+                        'website_data' => $current_website_transcript,
+                        'current_website_id' => $current_website_id
+                    ));
+                } else {
+                    $viewModel = new ViewModel(array(
+                        'client_websites' => $websiteTable->getWebsiteClients($id),
+                        'message' => $session->offsetGet('msg'),
+                        'website_data' => $current_website_transcript,
+                        'current_website_id' => $current_website_id
+                    ));
+                }
             } else {
-                $current_website_transcript = $transcriptTable->getTranscriptWebsite($current_website_id);
-            }
 
-
-            if (!empty($current_website_transcript)) {
-
-                $viewModel = new ViewModel(array(
-                    'client_websites' => $websiteTable->getWebsiteClients($id),
-                    'message' => $session->offsetGet('msg'),
-                    'website_data' => $current_website_transcript,
-                    'current_website_id' => $current_website_id
-                ));
-            } else {
-                $viewModel = new ViewModel(array(
-                    'client_websites' => $websiteTable->getWebsiteClients($id),
-                    'message' => $session->offsetGet('msg'),
-                    'website_data' => $current_website_transcript,
-                    'current_website_id' => $current_website_id
-                ));
-            }
-        } else {
-
-            $client_websites = $websiteTable->getWebsiteClients($id);
+                $client_websites = $websiteTable->getWebsiteClients($id);
 //           print_r($client_websites);
-            foreach ($client_websites as $value) {
+                foreach ($client_websites as $value) {
 //                  print_r($value);exit;
-                $current_website_id = $value->id;
+                    $current_website_id = $value->id;
 
-                $current_website_transcript = $transcriptTable->getTranscriptWebsite($value->id);
-                break;
+                    $current_website_transcript = $transcriptTable->getTranscriptWebsite($value->id);
+                    break;
+                }
+
+                $viewModel = new ViewModel(array(
+                    'client_websites' => $client_websites,
+                    'website_data' => $current_website_transcript,
+                    'current_website_id' => $current_website_id
+                ));
             }
 
-            $viewModel = new ViewModel(array(
-                'client_websites' => $client_websites,
-                'website_data' => $current_website_transcript,
-                'current_website_id' => $current_website_id
-            ));
+            return $viewModel;
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
-
-        return $viewModel;
     }
 
     public function addAction() {
-        $id = (int) $this->params()->fromRoute('id', 0);
-        $session = new Container('transcript');
-        $transcript_client_id = $session->offsetGet('transcript_client_id');
-        $session->offsetSet('current_website_id', $id);
+        if ($user = $this->identity()) {
+            $id = (int) $this->params()->fromRoute('id', 0);
+            $session = new Container('transcript');
+            $transcript_client_id = $session->offsetGet('transcript_client_id');
+            $session->offsetSet('current_website_id', $id);
 
-        if (!$id) {
-            return $this->redirect()->toRoute(NULL, array(
+            if (!$id) {
+                return $this->redirect()->toRoute(NULL, array(
 //                        'controller' => 'transcript',
-                        'action' => 'index',
-                        'id' => $transcript_client_id
-            ));
-        }
-        $form = new AddTranscriptForm();
-        if ($this->request->isPost()) {
+                            'action' => 'index',
+                            'id' => $transcript_client_id
+                ));
+            }
+            $form = new AddTranscriptForm();
+            if ($this->request->isPost()) {
 
-            $post = $this->request->getPost();
+                $post = $this->request->getPost();
 
-            $uploadFile = $this->params()->fromFiles('fileupload');
+                $uploadFile = $this->params()->fromFiles('fileupload');
 //            $ufiles = json_encode($this->request->getFiles()->toArray());
-            $post = array_merge_recursive(
-                    $this->request->getPost()->toArray(),
+                $post = array_merge_recursive(
+                        $this->request->getPost()->toArray(),
 //                                $this->request->getFiles()->toArray()                    
-                    array('fileupload' => $uploadFile['name'])
-            );
-            $adapter = new \Zend\File\Transfer\Adapter\Http();
-            $uploadPath = getcwd() . '\module\Clients\data\uploads\\' . $id;
-            if (!file_exists($uploadPath)) {
-                mkdir($uploadPath, 0777, true);
-            }
-            $adapter->setDestination($uploadPath);
-            if ($adapter->receive($uploadFile['name'])) {
+                        array('fileupload' => $uploadFile['name'])
+                );
+                $adapter = new \Zend\File\Transfer\Adapter\Http();
+                $uploadPath = getcwd() . '\module\Clients\data\uploads\\' . $id;
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0777, true);
+                }
+                $adapter->setDestination($uploadPath);
+                if ($adapter->receive($uploadFile['name'])) {
 
-                $post['website_id'] = $id;
-                $post['date_posted'] = date("Y-m-d", strtotime($post['date_posted']));
-                $post['date_received'] = date("Y-m-d", strtotime($post['date_received']));
-                $post['date_revised'] = date("Y-m-d", strtotime($post['date_revised']));
+                    $post['website_id'] = $id;
+                    $post['date_posted'] = date("Y-m-d", strtotime($post['date_posted']));
+                    $post['date_received'] = date("Y-m-d", strtotime($post['date_received']));
+                    $post['date_revised'] = date("Y-m-d", strtotime($post['date_revised']));
 
-                $transcript = new Transcript();
-                $transcript->exchangeArray($post);
+                    $transcript = new Transcript();
+                    $transcript->exchangeArray($post);
 //             print_r($transcript);exit;
-                $tableGateway = $this->getConnection();
-                $transcriptTable = new TranscriptTable($tableGateway);
+                    $tableGateway = $this->getConnection();
+                    $transcriptTable = new TranscriptTable($tableGateway);
 
-                $id = $transcriptTable->saveTranscript($transcript);
-                $session->offsetSet('msg', "Transcript has been successfully Added.");
-                return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id);
-            } else {
-                print_r("Could not get file in uploads folder");
-                exit();
+                    $id = $transcriptTable->saveTranscript($transcript);
+                    $session->offsetSet('msg', "Transcript has been successfully Added.");
+                    return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id);
+                } else {
+                    print_r("Could not get file in uploads folder");
+                    exit();
+                }
             }
-        }
 //        print($form);exit;
 
-        $viewModel = new ViewModel(array('form' => $form, 'id' => $id));
-        return $viewModel;
+            $viewModel = new ViewModel(array('form' => $form, 'id' => $id));
+            return $viewModel;
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
     }
 
     public function changewebsiteAction() {
-        $website_id = (int) $this->params()->fromRoute('id', 0);
-        $session = new Container('transcript');
-        $transcript_client_id = $session->offsetGet('transcript_client_id');
-        $session->offsetSet('current_website_id', $website_id);
-        $session->offsetSet('msg', "");
-        return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id);
+        if ($user = $this->identity()) {
+            $website_id = (int) $this->params()->fromRoute('id', 0);
+            $session = new Container('transcript');
+            $transcript_client_id = $session->offsetGet('transcript_client_id');
+            $session->offsetSet('current_website_id', $website_id);
+            $session->offsetSet('msg', "");
+            return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id);
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
     }
 
     public function editAction() {
-        $id = (int) $this->params()->fromRoute('id', 0);
-        $session = new Container('transcript');
-        $transcript_client_id = $session->offsetGet('transcript_client_id');
-        $session->offsetSet('msg', "Transcript has been successfully Updated.");
-        if (!$id) {
-            return $this->redirect()->toRoute(NULL, array(
-                        'controller' => 'index',
-                        'action' => 'add'
-            ));
-        }
-        $tableGateway = $this->getConnection();
-        $transcriptTable = new TranscriptTable($tableGateway);
-        $transcript = $transcriptTable->getTranscript($this->params()->fromRoute('id'));
-        $file_name = $transcript->fileupload;
-        $form = new EditTranscriptForm();
-        if ($this->request->isPost()) {
-            $uploadFile = $this->params()->fromFiles('fileupload');
-            $adapter = new \Zend\File\Transfer\Adapter\Http();
-            if ($uploadFile['name'] == '') {
-                $post = array_merge_recursive(
-                        $this->request->getPost()->toArray(), array('fileupload' => $file_name)
-                );
-                //saving Client data table
-                $transcript = $transcriptTable->getTranscript($post['id']);
-                $form->bind($transcript);
-                $form->setData($post);
-
-                $post['date_posted'] = date("Y-m-d", strtotime($post['date_posted']));
-                $post['date_received'] = date("Y-m-d", strtotime($post['date_received']));
-                $post['date_revised'] = date("Y-m-d", strtotime($post['date_revised']));
-                $transcript->date_posted = $post['date_posted'];
-                $transcript->date_revised = $post['date_revised'];
-                $transcript->date_received = $post['date_received'];
-                $transcript->name = $post['name'];
-                $transcript->fileupload = $post['fileupload'];
-                $session->offsetSet('current_website_id', $transcript->website_id);
-                $transcriptTable->saveTranscript($transcript);    // updating the data
-                return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id);
-            } else {
-                $filename = getcwd() . '\module\Clients\data\uploads\\' . $transcript->website_id . '\\' . $file_name;
-                unlink($filename);        // delete the old uploaded files
-                // upload new file
-                $uploadPath = getcwd() . '\module\Clients\data\uploads\\' . $transcript->website_id;
-
-                $post = array_merge_recursive(
-                        $this->request->getPost()->toArray(), array('fileupload' => $uploadFile['name'])
-                );
-
-                $adapter->setDestination($uploadPath);
-                if ($adapter->receive($uploadFile['name'])) {   //if file is received in uploaded folder
+        if ($user = $this->identity()) {
+            $id = (int) $this->params()->fromRoute('id', 0);
+            $session = new Container('transcript');
+            $transcript_client_id = $session->offsetGet('transcript_client_id');
+            $session->offsetSet('msg', "Transcript has been successfully Updated.");
+            if (!$id) {
+                return $this->redirect()->toRoute(NULL, array(
+                            'controller' => 'index',
+                            'action' => 'add'
+                ));
+            }
+            $tableGateway = $this->getConnection();
+            $transcriptTable = new TranscriptTable($tableGateway);
+            $transcript = $transcriptTable->getTranscript($this->params()->fromRoute('id'));
+            $file_name = $transcript->fileupload;
+            $form = new EditTranscriptForm();
+            if ($this->request->isPost()) {
+                $uploadFile = $this->params()->fromFiles('fileupload');
+                $adapter = new \Zend\File\Transfer\Adapter\Http();
+                if ($uploadFile['name'] == '') {
+                    $post = array_merge_recursive(
+                            $this->request->getPost()->toArray(), array('fileupload' => $file_name)
+                    );
                     //saving Client data table
                     $transcript = $transcriptTable->getTranscript($post['id']);
                     $form->bind($transcript);
@@ -227,24 +212,55 @@ class TranscriptController extends AbstractActionController {
                     $transcriptTable->saveTranscript($transcript);    // updating the data
                     return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id);
                 } else {
-                    print_r("Could not get file in uploads folder");
-                    exit();
+                    $filename = getcwd() . '\module\Clients\data\uploads\\' . $transcript->website_id . '\\' . $file_name;
+                    unlink($filename);        // delete the old uploaded files
+                    // upload new file
+                    $uploadPath = getcwd() . '\module\Clients\data\uploads\\' . $transcript->website_id;
+
+                    $post = array_merge_recursive(
+                            $this->request->getPost()->toArray(), array('fileupload' => $uploadFile['name'])
+                    );
+
+                    $adapter->setDestination($uploadPath);
+                    if ($adapter->receive($uploadFile['name'])) {   //if file is received in uploaded folder
+                        //saving Client data table
+                        $transcript = $transcriptTable->getTranscript($post['id']);
+                        $form->bind($transcript);
+                        $form->setData($post);
+
+                        $post['date_posted'] = date("Y-m-d", strtotime($post['date_posted']));
+                        $post['date_received'] = date("Y-m-d", strtotime($post['date_received']));
+                        $post['date_revised'] = date("Y-m-d", strtotime($post['date_revised']));
+                        $transcript->date_posted = $post['date_posted'];
+                        $transcript->date_revised = $post['date_revised'];
+                        $transcript->date_received = $post['date_received'];
+                        $transcript->name = $post['name'];
+                        $transcript->fileupload = $post['fileupload'];
+                        $session->offsetSet('current_website_id', $transcript->website_id);
+                        $transcriptTable->saveTranscript($transcript);    // updating the data
+                        return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id);
+                    } else {
+                        print_r("Could not get file in uploads folder");
+                        exit();
+                    }
                 }
             }
+
+            // changing date formation
+            $transcript->date_posted = date("m/d/Y", strtotime($transcript->date_posted));
+            $transcript->date_received = date("m/d/Y", strtotime($transcript->date_received));
+            $transcript->date_revised = date("m/d/Y", strtotime($transcript->date_revised));
+            $form->bind($transcript); //biding data to form
+
+            $viewModel = new ViewModel(array(
+                'form' => $form,
+                'id' => $this->params()->fromRoute('id'),
+                'fileupload' => $transcript->fileupload,
+            ));
+            return $viewModel;
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
-
-        // changing date formation
-        $transcript->date_posted = date("m/d/Y", strtotime($transcript->date_posted));
-        $transcript->date_received = date("m/d/Y", strtotime($transcript->date_received));
-        $transcript->date_revised = date("m/d/Y", strtotime($transcript->date_revised));
-        $form->bind($transcript); //biding data to form
-
-        $viewModel = new ViewModel(array(
-            'form' => $form,
-            'id' => $this->params()->fromRoute('id'),
-            'fileupload' => $transcript->fileupload,
-        ));
-        return $viewModel;
     }
 
     public function deleteAction() {  // delete transcript
@@ -277,105 +293,113 @@ class TranscriptController extends AbstractActionController {
     public function downloadallAction() {
 //       header('Content-Type: application/json');
 //       print($_POST['downloadids']);exit;
-        $download_ids = $_POST['downloadids'];
-        $current_website_id = (int) $this->params()->fromRoute('id', 0);
-        if (!$current_website_id) {
-            print_r("Cant get id in download ALL action");
-            exit();
-        }
-        $tableGateway = $this->getConnection();
-        $transcriptTable = new TranscriptTable($tableGateway);
-
-        if (!file_exists(getcwd() . '\module\Clients\data\uploads\temp\\' . $current_website_id)) {
-            mkdir(getcwd() . '\module\Clients\data\uploads\temp\\', 0777, true);
-        }
-        if (!empty($download_ids)) {
-            $download_ids = explode(",", $download_ids);
-            foreach ($download_ids as $ids) {
-                $single_data = $transcriptTable->getTranscript($ids);
-
-                $filename = getcwd() . '\module\Clients\data\uploads\\' . $current_website_id . '\\' . $single_data->fileupload;
-                $filename1 = getcwd() . '\module\Clients\data\uploads\temp\\'. $single_data->fileupload;
-                copy($filename, $filename1);
+        if ($user = $this->identity()) {
+            $download_ids = $_POST['downloadids'];
+            $current_website_id = (int) $this->params()->fromRoute('id', 0);
+            if (!$current_website_id) {
+                print_r("Cant get id in download ALL action");
+                exit();
             }
-        } else {
-            $data = $transcriptTable->getTranscriptWebsite($current_website_id);
+            $tableGateway = $this->getConnection();
+            $transcriptTable = new TranscriptTable($tableGateway);
 
-            foreach ($data as $value) {
-                $filename = getcwd() . '\module\Clients\data\uploads\\' . $current_website_id . '\\' . $value['fileupload'];
-                $filename1 = getcwd() . '\module\Clients\data\uploads\temp\\' . $value['fileupload'];
-                copy($filename, $filename1);
+            if (!file_exists(getcwd() . '\module\Clients\data\uploads\temp\\' . $current_website_id)) {
+                mkdir(getcwd() . '\module\Clients\data\uploads\temp\\', 0777, true);
             }
-        }
-        $filter = new \Zend\Filter\Compress(array(
-            'adapter' => 'Zip',
-            'options' => array(
-                'archive' => 'transcript.zip'
-            ),
-        ));
-        $compressed = $filter->filter(getcwd() . '\module\Clients\data\uploads\temp');
+            if (!empty($download_ids)) {
+                $download_ids = explode(",", $download_ids);
+                foreach ($download_ids as $ids) {
+                    $single_data = $transcriptTable->getTranscript($ids);
 
-                $files = glob(getcwd() . '\module\Clients\data\uploads\temp\*'); // get all file names
-        foreach ($files as $file) { // iterate files
-            if (is_file($file))
-                unlink($file); // delete file
-        }
-        if (is_dir(getcwd() . '\module\Clients\data\uploads\temp')) {
-            if (!rmdir(getcwd() . '\module\Clients\data\uploads\temp')) { {
-                    echo ("Could not remove");
-                    exit;
+                    $filename = getcwd() . '\module\Clients\data\uploads\\' . $current_website_id . '\\' . $single_data->fileupload;
+                    $filename1 = getcwd() . '\module\Clients\data\uploads\temp\\' . $single_data->fileupload;
+                    copy($filename, $filename1);
+                }
+            } else {
+                $data = $transcriptTable->getTranscriptWebsite($current_website_id);
+
+                foreach ($data as $value) {
+                    $filename = getcwd() . '\module\Clients\data\uploads\\' . $current_website_id . '\\' . $value['fileupload'];
+                    $filename1 = getcwd() . '\module\Clients\data\uploads\temp\\' . $value['fileupload'];
+                    copy($filename, $filename1);
                 }
             }
-        }
-        
-        header('Content-Description: File Transfer');
-        header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename=transcript.zip');
-        header('Content-Transfer-Encoding: binary');
-        header('Expires: 0');
-        header('Cache-Control: must-revalidate');
-        header('Pragma: public');
-        header('Content-Length: ' . filesize($compressed)); // $file));
-        ob_clean();
-        flush();
-        // readfile($file);
-        readfile($compressed);
-        //        print_r($files);exit;
+            $filter = new \Zend\Filter\Compress(array(
+                'adapter' => 'Zip',
+                'options' => array(
+                    'archive' => 'transcript.zip'
+                ),
+            ));
+            $compressed = $filter->filter(getcwd() . '\module\Clients\data\uploads\temp');
 
+            $files = glob(getcwd() . '\module\Clients\data\uploads\temp\*'); // get all file names
+            foreach ($files as $file) { // iterate files
+                if (is_file($file))
+                    unlink($file); // delete file
+            }
+            if (is_dir(getcwd() . '\module\Clients\data\uploads\temp')) {
+                if (!rmdir(getcwd() . '\module\Clients\data\uploads\temp')) { {
+                        echo ("Could not remove");
+                        exit;
+                    }
+                }
+            }
 
-        exit;
-    }
-
-    public function downloadAction() {
-        $id = (int) $this->params()->fromRoute('id', 0);
-        $session = new Container('transcript');
-        $current_website_id = $session->offsetGet('transcript_website_id');
-//         print_r($current_website_id);exit();
-        if (!$id) {
-            print_r("Cant get id in download action");
-            exit();
-        }
-        $tableGateway = $this->getConnection();
-        $transcriptTable = new TranscriptTable($tableGateway);
-        $data = $transcriptTable->getTranscript($id);
-        $filename = getcwd() . '\module\Clients\data\uploads\\' . $current_website_id . '\\' . $data->fileupload;
-        if (file_exists($filename)) {
             header('Content-Description: File Transfer');
             header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename=' . basename($data->fileupload));
+            header('Content-Disposition: attachment; filename=transcript.zip');
             header('Content-Transfer-Encoding: binary');
             header('Expires: 0');
             header('Cache-Control: must-revalidate');
             header('Pragma: public');
-            header('Content-Length: ' . filesize($filename)); // $file));
+            header('Content-Length: ' . filesize($compressed)); // $file));
             ob_clean();
             flush();
             // readfile($file);
-            readfile($filename);
-            exit;
-        }
+            readfile($compressed);
+            //        print_r($files);exit;
 
-        return new ViewModel(array());
+
+            exit;
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
+    }
+
+    public function downloadAction() {
+        if ($user = $this->identity()) {
+            $id = (int) $this->params()->fromRoute('id', 0);
+            $session = new Container('transcript');
+            $current_website_id = $session->offsetGet('transcript_website_id');
+//         print_r($current_website_id);exit();
+            if (!$id) {
+                print_r("Cant get id in download action");
+                exit();
+            }
+            $tableGateway = $this->getConnection();
+            $transcriptTable = new TranscriptTable($tableGateway);
+            $data = $transcriptTable->getTranscript($id);
+            $filename = getcwd() . '\module\Clients\data\uploads\\' . $current_website_id . '\\' . $data->fileupload;
+            if (file_exists($filename)) {
+                header('Content-Description: File Transfer');
+                header('Content-Type: application/octet-stream');
+                header('Content-Disposition: attachment; filename=' . basename($data->fileupload));
+                header('Content-Transfer-Encoding: binary');
+                header('Expires: 0');
+                header('Cache-Control: must-revalidate');
+                header('Pragma: public');
+                header('Content-Length: ' . filesize($filename)); // $file));
+                ob_clean();
+                flush();
+                // readfile($file);
+                readfile($filename);
+                exit;
+            }
+
+            return new ViewModel(array());
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
     }
 
     public function getTranscriptByIdAction() {
@@ -399,50 +423,62 @@ class TranscriptController extends AbstractActionController {
     }
 
     public function setDateRange() {
-        $session = new Container('transcript');
-        $from = $session->offsetGet('from');
-        $till = $session->offsetGet('till');
-        $website_id = $session->offsetGet('current_website_id');
-        $from = $from . ' 00:00:00';
-        $till = $till . ' 23:59:59';
+        if ($user = $this->identity()) {
+            $session = new Container('transcript');
+            $from = $session->offsetGet('from');
+            $till = $session->offsetGet('till');
+            $website_id = $session->offsetGet('current_website_id');
+            $from = $from . ' 00:00:00';
+            $till = $till . ' 23:59:59';
 //       print_r($from);
 //       print_r($till);exit;
-        $tableGateway = $this->getConnection();
-        $transcriptTable = new TranscriptTable($tableGateway);
-        $website_transcripts_data = $transcriptTable->dateRange($from, $till, $website_id);
-        return $website_transcripts_data;
+            $tableGateway = $this->getConnection();
+            $transcriptTable = new TranscriptTable($tableGateway);
+            $website_transcripts_data = $transcriptTable->dateRange($from, $till, $website_id);
+            return $website_transcripts_data;
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
     }
 
     public function daterangeAction() {      // finding daterange data from database
-        $daterange = $_GET['daterange'];
-        $website_id = $_GET['websiteid'];
+        if ($user = $this->identity()) {
+            $daterange = $_GET['daterange'];
+            $website_id = $_GET['websiteid'];
 
-        $ranges = explode('-', $daterange);
-        $all_ranges = array();
-        foreach ($ranges as $range) {
-            $range = trim($range);
-            $parts = explode(' ', $range);
-            $month = date("m", strtotime($parts[0]));
-            $day = rtrim($parts[1], ',');
-            $all_ranges[] = $parts[2] . '-' . $month . '-' . $day;
+            $ranges = explode('-', $daterange);
+            $all_ranges = array();
+            foreach ($ranges as $range) {
+                $range = trim($range);
+                $parts = explode(' ', $range);
+                $month = date("m", strtotime($parts[0]));
+                $day = rtrim($parts[1], ',');
+                $all_ranges[] = $parts[2] . '-' . $month . '-' . $day;
+            }
+            $session = new Container('transcript');
+            $session->offsetSet('current_website_id', $website_id);
+            $session->offsetSet('from', $all_ranges[0]);
+            $session->offsetSet('till', $all_ranges[1]);
+            $session->offsetSet('daterange', $daterange);
+            $transcript_client_id = $session->offsetGet('transcript_client_id');
+            return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id);
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
-        $session = new Container('transcript');
-        $session->offsetSet('current_website_id', $website_id);
-        $session->offsetSet('from', $all_ranges[0]);
-        $session->offsetSet('till', $all_ranges[1]);
-        $session->offsetSet('daterange', $daterange);
-        $transcript_client_id = $session->offsetGet('transcript_client_id');
-        return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id);
     }
 
     public function setmessageAction() {  // set message for delete client transcript
-        $session = new Container('transcript');
-        $transcript_client_id = $session->offsetGet('transcript_client_id');
-        $website_id = (int) $this->params()->fromRoute('id', 0);
-        $session->offsetSet('current_website_id', $website_id);
-        $session->offsetSet('msg', "Transcript has been successfully Deleted.");
+        if ($user = $this->identity()) {
+            $session = new Container('transcript');
+            $transcript_client_id = $session->offsetGet('transcript_client_id');
+            $website_id = (int) $this->params()->fromRoute('id', 0);
+            $session->offsetSet('current_website_id', $website_id);
+            $session->offsetSet('msg', "Transcript has been successfully Deleted.");
 //        print_r($website_id);exit;
-        return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id);
+            return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id);
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
     }
 
     public function getConnection() {           // set connection to transcript table

@@ -1,5 +1,9 @@
 <?php 
-use Zend\Debug\Debug
+use Zend\Debug\Debug;
+use Zend\Authentication\AuthenticationService;
+
+$auth = new AuthenticationService();
+//print_r($auth->getIdentity()->roles_id);exit;
 ?>
 <div class="page-header">
         <h1>
@@ -41,7 +45,11 @@ use Zend\Debug\Debug
        <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Date </label>
             <div class="input-group input-group-sm col-sm-9">
                    <?php 
+                   if($auth->getIdentity()->roles_id ==2){
+                   echo $this->formElement($form->get('lead_date')->setAttribute('disabled', 'disabled'));
+                   }else{
                    echo $this->formElement($form->get('lead_date'));
+                   }
                    echo $this->formElementErrors($form->get('lead_date'));
              ?>
    
@@ -51,7 +59,11 @@ use Zend\Debug\Debug
        <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Lead Source </label>
        <div class="col-sm-9">
            <?php
-            echo $this->formElement($form->get('lead_source'));
+            if($auth->getIdentity()->roles_id ==2){
+                   echo $this->formElement($form->get('lead_source')->setAttribute('disabled', 'disabled'));
+                   }else{
+                  echo $this->formElement($form->get('lead_source'));
+                   }
             echo $this->formElementErrors($form->get('lead_source'));
          ?>
        </div>
@@ -60,7 +72,12 @@ use Zend\Debug\Debug
        <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Incoming Phone </label>
        <div class="col-sm-9">
            <?php
-            echo $this->formElement($form->get('inc_phone'));
+            if($auth->getIdentity()->roles_id ==2){
+                    echo $this->formElement($form->get('inc_phone')->setAttribute('disabled', 'disabled'));
+                   }else{
+                   echo $this->formElement($form->get('inc_phone'));
+                   }
+           
             echo $this->formElementErrors($form->get('inc_phone'));
          ?>
        </div>
@@ -69,7 +86,12 @@ use Zend\Debug\Debug
        <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Call Duration </label>
        <div class="col-sm-9">
            <?php
-            echo $this->formElement($form->get('call_duration'));
+            if($auth->getIdentity()->roles_id ==2){
+                  echo $this->formElement($form->get('call_duration')->setAttribute('disabled', 'disabled'));
+                   }else{
+                  echo $this->formElement($form->get('call_duration'));
+                   }
+            
             echo $this->formElementErrors($form->get('call_duration'));
          ?>
        </div>

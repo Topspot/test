@@ -41,7 +41,8 @@ class EditLeadForm extends Form {
             ),
             'attributes' => array(
                 'value' => '', //set selected to '1'
-                'class' => 'col-xs-10 col-sm-5'
+                'class' => 'col-xs-10 col-sm-5',
+                
             )
         ));
         $this->add(array(
@@ -51,6 +52,7 @@ class EditLeadForm extends Form {
                 'id' => 'datepicker',
                 'class' => 'col-xs-10 col-sm-5',
                 'placeholder' => 'Select Date',
+
             ),
             'options' => array(
                 'label' => 'Date',
@@ -81,6 +83,7 @@ class EditLeadForm extends Form {
                 'class' => 'col-xs-10 col-sm-5 input-mask-phone',
                 'id' => 'inc_phone',
                 'placeholder' => 'Phone',
+      
             ),
             'options' => array(
 //                'label' => 'Phone',
@@ -94,6 +97,8 @@ class EditLeadForm extends Form {
                 'class' => 'col-xs-10 col-sm-5',
                 'id' => 'call_duration',
                 'placeholder' => 'Call Duration',
+                
+       
             ),
             'options' => array(
 //                'label' => 'Full Name',
