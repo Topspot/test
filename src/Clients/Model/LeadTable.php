@@ -6,6 +6,7 @@ use Zend\Db\Adapter\Adapter;
 use Zend\Db\ResultSet\ResultSet;
 use Zend\Db\TableGateway\TableGateway;
 use Zend\Debug\Debug;
+use Zend\Db\Sql\Where;
 
 class LeadTable {
 
@@ -16,7 +17,7 @@ class LeadTable {
     }
 
     public function saveLead(Lead $lead) {
-                              
+
         $data = array(
 //            'comments' => $lead->comments,
             'caller_type' => $lead->caller_type,
@@ -31,7 +32,7 @@ class LeadTable {
             'lead_email' => $lead->lead_email,
             'website_id' => $lead->website_id,
         );
-        
+
         $id = (int) $lead->id;
 //         Debug::dump($id);
 //         Debug::dump($lead->id);exit;
@@ -45,7 +46,6 @@ class LeadTable {
             if ($this->getLead($id)) {
 
                 $this->tableGateway->update($data, array('id' => $id));
-                 
             } else {
                 throw new \Exception('Lead ID does not exist');
             }
@@ -67,7 +67,7 @@ class LeadTable {
         if (!$row) {
             throw new \Exception("Could not find row $id");
         }
-                
+
         return $row;
     }
 
@@ -94,6 +94,18 @@ class LeadTable {
 
     public function deleteLead($id) {
         $this->tableGateway->delete(array('id' => $id));
+    }
+
+    public function dateRange($from, $till, $website_id) {
+//        print_r("daterange");
+        $where = new Where();
+        $where->equalTo('website_id', $website_id);
+        $where->between('lead_date', $from, $till);
+        $resultSet = $this->tableGateway->select($where);
+//        print_r($resultSet);
+//        exit;
+//        $resultSet->buffer();
+        return $resultSet;
     }
 
 }

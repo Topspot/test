@@ -30,19 +30,19 @@ class LeadController extends AbstractActionController {
             $data = $_POST;
             $tableGatewayWebsite = $this->getConnectionWebsite();
             $websiteTable = new WebsiteTable($tableGatewayWebsite);
-            $website_data = $websiteTable->getWebsiteByName($data['website']);
-            if ($website_data) {
-                $website_id = $website_data->id;
-            } else {
-                print_r("Cannot find any Website");
-                exit;
-            }
+//            $website_data = $websiteTable->getWebsiteByName($data['website']);
+//            if ($website_data) {
+//                $website_id = $website_data->id;
+//            } else {
+//                print_r("Cannot find any Website");
+//                exit;
+//            }
             $tableGateway = $this->getConnection();
             $leadTable = new LeadTable($tableGateway);
 
             $lead = new Lead();
             $lead->comments = $data['comments'];
-            $lead->website_id = $website_id;
+//            $lead->website_id = $website_id;
             $lead->caller_type = $data['caller_type'];
             $date = explode('/', $data['lead_date']);
             $lead->lead_date = $date[2] . '-' . $date[0] . '-' . $date[1];
@@ -60,29 +60,31 @@ class LeadController extends AbstractActionController {
     }
 
     public function indexAction() {
-
+      if ($user = $this->identity()) {
+         echo 'Logged in as';
+     } else {
+         echo 'Not logged in';
+     }
         $id = (int) $this->params()->fromRoute('id', 0);
-
+       
         $session = new Container('lead');
         $session->offsetSet('lead_client_id', $id);
 
 
         if (!$id) {
-            return $this->redirect()->toRoute(NULL, array(
-                        'controller' => 'index',
-                        'action' => 'list'
-            ));
+            print_r("cant find ID");exit;
         }
         $tableGatewayWebsite = $this->getConnectionWebsite();
         $websiteTable = new WebsiteTable($tableGatewayWebsite);
 
         $tableGateway = $this->getConnection();
         $leadTable = new LeadTable($tableGateway);
-
         if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
             $current_website_id = $session->offsetGet('current_website_id');
             if ($session->offsetExists('from') && $session->offsetGet('from') != '') {
+//                print_r("in");
                 $current_website_lead = $this->setDateRange();
+                 
 //                print_r($current_website_lead);exit;
             } else {
                 $current_website_lead = $leadTable->getLeadWebsite($current_website_id);
@@ -96,6 +98,7 @@ class LeadController extends AbstractActionController {
                     'current_website_id' => $current_website_id
                 ));
             } else {
+               
                 $viewModel = new ViewModel(array(
                     'client_websites' => $websiteTable->getWebsiteClients($id),
                     'message' => $session->offsetGet('msg'),
@@ -138,7 +141,6 @@ class LeadController extends AbstractActionController {
         }
 
         $form = new AddLeadForm();
-
         if ($this->request->isPost()) {
             $tableGateway = $this->getConnection();
             $post = $this->request->getPost();
@@ -268,10 +270,10 @@ class LeadController extends AbstractActionController {
         $from = $session->offsetGet('from');
         $till = $session->offsetGet('till');
         $website_id = $session->offsetGet('current_website_id');
-
         $tableGateway = $this->getConnection();
         $leadTable = new LeadTable($tableGateway);
         $website_leads_data = $leadTable->dateRange($from, $till, $website_id);
+//        print_r($website_leads_data);exit;
         return $website_leads_data;
     }
 
@@ -288,6 +290,7 @@ class LeadController extends AbstractActionController {
             $day = rtrim($parts[1], ',');
             $all_ranges[] = $parts[2] . '-' . $month . '-' . $day;
         }
+    
         $session = new Container('lead');
         $session->offsetSet('current_website_id', $website_id);
         $session->offsetSet('from', $all_ranges[0]);

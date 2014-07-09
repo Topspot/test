@@ -111,4 +111,14 @@ return array(
     'module_config' => array(
         'upload_location' => __DIR__ . '/../data/uploads',
     ),
+    'service_manager' => array(
+		// added for Authentication and Authorization. Without this each time we have to create a new instance.
+		// This code should be moved to a module to allow Doctrine to overwrite it
+		'aliases' => array( // !!! aliases not alias
+			'Zend\Authentication\AuthenticationService' => 'my_auth_service',
+		),
+		'invokables' => array(
+			'my_auth_service' => 'Zend\Authentication\AuthenticationService',
+		),
+    ),
 );

@@ -11,6 +11,13 @@
 namespace Clients\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
+use Zend\Authentication\Result;
+use Zend\Authentication\AuthenticationService;
+use Zend\Authentication\Storage\Session as SessionStorage;
+
+use Zend\Db\Adapter\Adapter as DbAdapter;
+
+use Zend\Authentication\Adapter\DbTable as AuthAdapter;
 use Zend\View\Model\ViewModel;
 use Clients\Form\AddForm;
 use Clients\Form\AddFilter;
@@ -32,6 +39,12 @@ class IndexController extends AbstractActionController {
     }
 
     public function listAction() {
+        
+     if ($user = $this->identity()) {
+         echo 'Logged in as';
+     } else {
+         echo 'Not logged in';
+     }
         $session = new Container('link');
         $delete_msg = $session->offsetGet('delete_user_msg');
         $tableGateway = $this->getConnection();
