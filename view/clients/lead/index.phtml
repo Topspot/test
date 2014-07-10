@@ -82,6 +82,11 @@ $daterange=$session->offsetGet('daterange');
                 </select>
 
             </div>
+<!--            <form action="/lead/exportdata" method="post">
+            <input type="hidden" name="id" value="<?php //echo $website_data; ?>" />
+            <input type="submit" name="submit" value="Export All" class="btn btn-grey pull-right" style="margin-right: 10px;"/>
+            </form>-->
+            <a href="#" onclick="exportAll(<?php // echo $website_data; ?>);" class="btn btn-grey pull-right" data-id="transcript" style="margin-right: 10px;">Export</a>
 
         </div>
 

@@ -23,6 +23,9 @@ use Clients\Form\AddLeadForm;
 use Clients\Form\AddLeadFilter;
 use Clients\Form\EditLeadForm;
 use Clients\Form\EditLeadFilter;
+use PHPExcel;
+use Excel2007;
+use IOFactory;
 
 class LeadController extends AbstractActionController {
 
@@ -61,9 +64,61 @@ class LeadController extends AbstractActionController {
     }
 
     public function indexAction() {
+
         if ($user = $this->identity()) {
-//            $auth = new AuthenticationService();
-//            print_r($auth->getIdentity());exit;
+////            ini_set("display_errors", "1");
+////            error_reporting(E_ALL & ~E_NOTICE);
+//
+//// Create new PHPExcel object
+//$objPHPExcel = new PHPExcel();
+//
+//// Set document properties
+//$objPHPExcel->getProperties()->setCreator("Maarten Balliauw")
+//							 ->setLastModifiedBy("Maarten Balliauw")
+//							 ->setTitle("Office 2007 XLSX Test Document")
+//							 ->setSubject("Office 2007 XLSX Test Document")
+//							 ->setDescription("Test document for Office 2007 XLSX, generated using PHP classes.")
+//							 ->setKeywords("office 2007 openxml php")
+//							 ->setCategory("Test result file");
+//
+//
+//// Add some data
+//$objPHPExcel->setActiveSheetIndex(0)
+//            ->setCellValue('A1', 'Hello')
+//            ->setCellValue('B1', 'world!')
+//            ->setCellValue('C1', 'Hello')
+//            ->setCellValue('D1', 'world!');
+//$objPHPExcel->getActiveSheet()->getStyle('A1:D1')->getFont()->setBold(true);
+//// Miscellaneous glyphs, UTF-8
+////$objPHPExcel->setActiveSheetIndex(0)
+////            ->setCellValue('A4', 'Miscellaneous glyphs')
+////            ->setCellValue('A5', 'Ã©Ã Ã¨Ã¹Ã¢ÃªÃ®Ã´Ã»Ã«Ã¯Ã¼Ã¿Ã¤Ã¶Ã¼Ã§');
+//
+//// Rename worksheet
+//$objPHPExcel->getActiveSheet()->setTitle('Simple');
+//
+//
+//// Set active sheet index to the first sheet, so Excel opens this as the first sheet
+//$objPHPExcel->setActiveSheetIndex(0);
+//
+//
+//// Redirect output to a clientâ€™s web browser (Excel2007)
+//header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+//header('Content-Disposition: attachment;filename="01simple.xlsx"');
+//header('Cache-Control: max-age=0');
+//// If you're serving to IE 9, then the following may be needed
+//header('Cache-Control: max-age=1');
+//
+//// If you're serving to IE over SSL, then the following may be needed
+//header ('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+//header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); // always modified
+//header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+//header ('Pragma: public'); // HTTP/1.0
+//
+//$objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+//$objWriter->save('php://output');
+//exit;
+//            print_r($objPHPExcel);exit;
             $id = (int) $this->params()->fromRoute('id', 0);
 
             $session = new Container('lead');
@@ -115,6 +170,11 @@ class LeadController extends AbstractActionController {
                     $current_website_lead = $leadTable->getLeadWebsite($value->id);
                     break;
                 }
+//                 $session->offsetSet('lead_client_id', $id);
+//                $sessionNamespace = new Zend_Session_Namespace();
+//                $sessionNamespace->array = array();
+//                $sessionNamespace->array['testKey'] = 1;
+//                echo $sessionNamespace->array['testKey'];exit;
                 $viewModel = new ViewModel(array(
                     'client_websites' => $client_websites,
                     'website_data' => $current_website_lead,
@@ -128,6 +188,10 @@ class LeadController extends AbstractActionController {
         }
     }
 
+    public function exportdataAction() {
+        print_r("Export data");exit;
+    }
+        
     public function addAction() {
         if ($user = $this->identity()) {
             $id = (int) $this->params()->fromRoute('id', 0);
@@ -187,7 +251,7 @@ class LeadController extends AbstractActionController {
     }
 
     public function editAction() {
-        
+
         if ($user = $this->identity()) {
             $id = (int) $this->params()->fromRoute('id', 0);
             $session = new Container('lead');
@@ -216,16 +280,16 @@ class LeadController extends AbstractActionController {
 //            print_r($post);exit;
                 $originalDate = $post->lead_date;
                 $newDate = date("Y-m-d", strtotime($originalDate));
-                 if($auth->getIdentity()->roles_id ==2){
-                     
-                 }else{
-                $post->lead_date = $newDate;
-                $lead->lead_source = $post->lead_source;
-                $lead->inc_phone = $post->inc_phone;
-                $lead->call_duration = $post->call_duration;
-                 }
+                if ($auth->getIdentity()->roles_id == 2) {
+                    
+                } else {
+                    $post->lead_date = $newDate;
+                    $lead->lead_source = $post->lead_source;
+                    $lead->inc_phone = $post->inc_phone;
+                    $lead->call_duration = $post->call_duration;
+                }
                 $lead->caller_type = $post->caller_type;
-                
+
                 $lead->lead_name = $post->lead_name;
                 $lead->lead_email = $post->lead_email;
                 $session->offsetSet('current_website_id', $lead->website_id);
