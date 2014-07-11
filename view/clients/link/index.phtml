@@ -92,6 +92,15 @@ $daterange=$session->offsetGet('daterange');
                 </select>
 
             </div>
+             <?php
+             $num=0;
+                        foreach ($website_data as $transcriptt) {                            
+                            $session->offsetSet('leadobject'.$num, $transcriptt);
+                            $num=$num+1;
+                        }    
+            ?>
+
+            <a href="/link/exportdata/<?php echo $num-1; ?>" class="btn btn-grey pull-right" data-id="link" style="margin-right: 10px;">Export</a>
 
         </div>
 
@@ -111,7 +120,9 @@ $daterange=$session->offsetGet('daterange');
                         <th class="hidden"></th>
                         <th class="hidden"></th>
                         <th class="hidden"></th>
-                        <th></th>
+                        <th class="hidden"></th>
+                        <th class="hidden"></th>
+                        <th>Action</th>
                     </tr>
                 </thead>
 
@@ -136,6 +147,8 @@ $daterange=$session->offsetGet('daterange');
 
 
 
+                            <td class="hidden"></td>
+                            <td class="hidden"></td>
                             <td class="hidden"></td>
                             <td class="hidden"></td>
                             <td class="hidden"></td>

@@ -109,6 +109,7 @@ class LeadTable {
         $where->equalTo('website_id', $website_id);
         $where->between('lead_date', $from, $till);
         $resultSet = $this->tableGateway->select($where);
+        $resultSet->buffer();
 //        print_r($resultSet);
 //        exit;
 //        $resultSet->buffer();

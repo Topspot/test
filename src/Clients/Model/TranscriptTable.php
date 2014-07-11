@@ -58,7 +58,8 @@ class TranscriptTable {
 
     public function getTranscriptWebsite($id) {
         $id = (int) $id;
-        $rowset = $this->tableGateway->select(array('website_id' => $id))->toArray();
+        $rowset = $this->tableGateway->select(array('website_id' => $id));
+        $rowset->buffer();
 //        print_r($rowset);exit;
 //        $row = $rowset->current();
 //        if (!$rowset) {

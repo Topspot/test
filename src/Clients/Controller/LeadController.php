@@ -26,6 +26,7 @@ use Clients\Form\EditLeadFilter;
 use PHPExcel;
 use Excel2007;
 use IOFactory;
+
 //use Zend\Session\Container; // We need this when using sessions
 //use Zend\Session\Storage\ArrayStorage;
 //use Zend\Session\SessionManager;
@@ -33,6 +34,7 @@ use IOFactory;
 class LeadController extends AbstractActionController {
 
     protected $alldata;
+
 //     public function __construct()
 //    {
 ////        $this->alldata='';
@@ -87,13 +89,12 @@ class LeadController extends AbstractActionController {
 
             $tableGateway = $this->getConnection();
             $leadTable = new LeadTable($tableGateway);
-           
+
             if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
                 $current_website_id = $session->offsetGet('current_website_id');
                 if ($session->offsetExists('from') && $session->offsetGet('from') != '') {
 
                     $current_website_lead = $this->setDateRange();
-
                 } else {
                     $current_website_lead = $leadTable->getLeadWebsite($current_website_id);
                 }
@@ -122,8 +123,8 @@ class LeadController extends AbstractActionController {
                     $current_website_lead = $leadTable->getLeadWebsite($value->id);
                     break;
                 }
-               
-                $this->alldata=$current_website_lead;
+
+                $this->alldata = $current_website_lead;
 
                 $viewModel = new ViewModel(array(
                     'client_websites' => $client_websites,
@@ -139,76 +140,97 @@ class LeadController extends AbstractActionController {
     }
 
     public function exportdataAction() {
-         $num = (int) $this->params()->fromRoute('id', 0);    
- $session = new Container('lead');
+         if ($user = $this->identity()) {
+        $num = (int) $this->params()->fromRoute('id', 0);
+        $session = new Container('lead');
 //                    ini_set("display_errors", "1");
 //            error_reporting(E_ALL & ~E_NOTICE);
-
 // Create new PHPExcel object
-$objPHPExcel = new PHPExcel();
+        $objPHPExcel = new PHPExcel();
 
 // Set document properties
-$objPHPExcel->getProperties()->setCreator("Maarten Balliauw")
-							 ->setLastModifiedBy("Maarten Balliauw")
-							 ->setTitle("Office 2007 XLSX Test Document")
-							 ->setSubject("Office 2007 XLSX Test Document")
-							 ->setDescription("Test document for Office 2007 XLSX, generated using PHP classes.")
-							 ->setKeywords("office 2007 openxml php")
-							 ->setCategory("Test result file");
-
-
-
+        $objPHPExcel->getProperties()->setCreator("Speak Easy Marketing Inc")
+                ->setLastModifiedBy("Maarten Balliauw")
+                ->setTitle("Office 2007 XLSX Test Document")
+                ->setSubject("Office 2007 XLSX Test Document")
+                ->setDescription("Test document for Office 2007 XLSX, generated using PHP classes.")
+                ->setKeywords("office 2007 openxml php")
+                ->setCategory("Test result file");
 // Add some data
-$objPHPExcel->setActiveSheetIndex(0)
-            ->setCellValue('A1', 'Caller Type')
-            ->setCellValue('B1', 'Lead Date')
-            ->setCellValue('C1', 'Lead Source')
-            ->setCellValue('D1', 'Incomming Ph')
-            ->setCellValue('E1', 'Call Duration')
-            ->setCellValue('F1', 'Leads Name')
-            ->setCellValue('G1', 'Leads email');
+        $objPHPExcel->setActiveSheetIndex(0)
+                ->setCellValue('A1', 'Caller Type')
+                ->setCellValue('B1', 'Lead Date')
+                ->setCellValue('C1', 'Lead Source')
+                ->setCellValue('D1', 'Incomming Ph')
+                ->setCellValue('E1', 'Call Duration')
+                ->setCellValue('F1', 'Leads Name')
+                ->setCellValue('G1', 'Leads email');
 
-$objPHPExcel->getActiveSheet()->getStyle('A1:G1')->getFont()->setBold(true);
-            for($i=0;$i <= $num;$i++){
-            $data =$session->offsetGet('leadobject'.$i);
-            $cell=$i+2;
+        $objPHPExcel->getActiveSheet()->getStyle('A1:G1')->getFont()->setBold(true);
+        for ($i = 0; $i <= $num; $i++) {
+            $data = $session->offsetGet('leadobject' . $i);
+            $cell = $i + 2;
+            if ($data->caller_type == 1) {
+                $name = "Poten Newclient";
+            } else if ($data->caller_type == 2) {
+                $name = "Non-client";
+            } else if ($data->caller_type == 3) {
+                $name = "Soliciter";
+            } else if ($data->caller_type == 4) {
+                $name = "Current Client";
+            } else if ($data->caller_type == 5) {
+                $name = "Repeated";
+            } else if ($data->caller_type == 6) {
+                $name = "Web Formt";
+            } else if ($data->caller_type == 7) {
+                $name = "Test call";
+            } else {
+                $name = "No Recording";
+            }
+
+            if ($data->lead_source == 1) {
+                $lead_src = "Website-NY";
+            } else if ($data->lead_source == 2) {
+                $lead_src = "Contact Form";
+            } else {
+                $lead_src = "Book Download";
+            }
             $objPHPExcel->setActiveSheetIndex(0)
-            ->setCellValue('A'.$cell, $data->caller_type)
-            ->setCellValue('B'.$cell, $data->lead_date)
-            ->setCellValue('C'.$cell, $data->lead_source)
-            ->setCellValue('D'.$cell, $data->inc_phone)
-            ->setCellValue('E'.$cell, $data->call_duration)
-            ->setCellValue('F'.$cell, $data->lead_name)
-            ->setCellValue('G'.$cell, $data->lead_email);
-         }
-
+                    ->setCellValue('A' . $cell, $name)
+                    ->setCellValue('B' . $cell, $data->lead_date)
+                    ->setCellValue('C' . $cell, $lead_src)
+                    ->setCellValue('D' . $cell, $data->inc_phone)
+                    ->setCellValue('E' . $cell, $data->call_duration)
+                    ->setCellValue('F' . $cell, $data->lead_name)
+                    ->setCellValue('G' . $cell, $data->lead_email);
+        }
 // Rename worksheet
-$objPHPExcel->getActiveSheet()->setTitle('Simple');
-
+        $objPHPExcel->getActiveSheet()->setTitle('Leads');
 
 // Set active sheet index to the first sheet, so Excel opens this as the first sheet
-$objPHPExcel->setActiveSheetIndex(0);
-
-
+        $objPHPExcel->setActiveSheetIndex(0);
+        
 // Redirect output to a clientâ€™s web browser (Excel2007)
-header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment;filename="01simple.xlsx"');
-header('Cache-Control: max-age=0');
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="Leads.xlsx"');
+        header('Cache-Control: max-age=0');
 // If you're serving to IE 9, then the following may be needed
-header('Cache-Control: max-age=1');
+        header('Cache-Control: max-age=1');
 
 // If you're serving to IE over SSL, then the following may be needed
-header ('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); // always modified
-header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
-header ('Pragma: public'); // HTTP/1.0
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always modified
+        header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+        header('Pragma: public'); // HTTP/1.0
 
-$objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-$objWriter->save('php://output');
-exit;
-
+        $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+        $objWriter->save('php://output');
+        exit;
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
     }
-        
+
     public function addAction() {
         if ($user = $this->identity()) {
             $id = (int) $this->params()->fromRoute('id', 0);
@@ -224,7 +246,6 @@ exit;
                             'id' => $lead_client_id
                 ));
             }
-
             $form = new AddLeadForm();
             if ($this->request->isPost()) {
                 $tableGateway = $this->getConnection();

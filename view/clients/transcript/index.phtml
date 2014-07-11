@@ -7,7 +7,7 @@ $session = new Container('transcript');
 <div class="row">
     <div class="col-xs-12"> 
         <?php
-//         print_r($message);;
+//  print_r($website_data);exit;
         if (isset($message) && $message != '') {
             if ($message == "Transcript has been successfully Deleted.") {
                 ?>
@@ -94,7 +94,15 @@ $session = new Container('transcript');
 
             </div>
             <a href="#" onclick="downloadAll(<?php echo $current_website_id; ?>);" class="btn btn-grey pull-right" data-id="transcript" style="margin-right: 10px;">Download All</a>
+             <?php
+             $num=0;
+                        foreach ($website_data as $transcriptt) {                            
+                            $session->offsetSet('leadobject'.$num, $transcriptt);
+                            $num=$num+1;
+                        }    
+            ?>
 
+            <a href="/transcript/exportdata/<?php echo $num-1; ?>" class="btn btn-grey pull-right" data-id="transcript" style="margin-right: 10px;">Export</a>
         </div>
 
         <div class="table-responsive">
@@ -112,7 +120,9 @@ $session = new Container('transcript');
                         <th>Date Posted</th>
                         <th>Date Revised</th>                                     
                         <th class="hidden"></th>
-                        <th></th>
+                        <th class="hidden"></th>
+                        <th class="hidden"></th>
+                        <th>Action</th>
                     </tr>
                 </thead>
 
@@ -120,22 +130,24 @@ $session = new Container('transcript');
                     <tr>
 
                         <?php
-//                         print_r($website_data);
+//                         print_r($website_data);exit;
                         foreach ($website_data as $transcript) {                         
                             ?>
                             <td class="center">
                                 <label>
-                                    <input type="checkbox" class="ace" data-id="<?php echo $transcript['id']; ?>" />
+                                    <input type="checkbox" class="ace" data-id="<?php echo $transcript->id; ?>" />
                                     <span class="lbl"></span>
                                 </label>
                             </td>
 
                             <td>
-                             <?php echo $transcript['name']; ?>
+                             <?php echo $transcript->name; ?>
                             </td>
-                            <td><?php echo $transcript['date_posted']; ?></td>
-                            <td><?php echo $transcript['date_received']; ?></td>
-                            <td><?php echo $transcript['date_revised']; ?></td>
+                            <td><?php echo $transcript->date_posted; ?></td>
+                            <td><?php echo $transcript->date_received; ?></td>
+                            <td><?php echo $transcript->date_revised; ?></td>
+                            <td class="hidden"></td>
+                            <td class="hidden"></td>
                             <td class="hidden"></td>
 
                             <td>
@@ -144,14 +156,14 @@ $session = new Container('transcript');
                                         <i class="icon-zoom-in bigger-130"></i>
                                     </a>
 
-                                    <a class="green" href="<?php echo $this->url('transcript', array('action' => 'edit', 'id' => $transcript['id'])); ?>">
+                                    <a class="green" href="<?php echo $this->url('transcript', array('action' => 'edit', 'id' => $transcript->id)); ?>">
                                         <i class="icon-pencil bigger-130"></i>
                                     </a>
-                                    <!--<a href="<?php //echo $this->url('clients', array('action' => 'dialoge', 'id' => $client->id));   ?>" class="tooltip-error" data-rel="tooltip" title="Dialoge">-->
-                                    <a href="#" role="button" class="red" onclick="deleterow(<?php echo $transcript['id']; ?>,'transcript');"> 
+                                   
+                                    <a href="#" role="button" class="red" onclick="deleterow(<?php echo $transcript->id; ?>,'transcript');"> 
                                         <i class="icon-trash bigger-130"></i>
                                     </a>
-                                    <a href="<?php echo $this->url('transcript', array('action' => 'download', 'id' => $transcript['id'])); ?>" class="gray" > 
+                                    <a href="<?php echo $this->url('transcript', array('action' => 'download', 'id' => $transcript->id)); ?>" class="gray" > 
                                         <i class="icon-download bigger-130"></i>
                                     </a>
                                 </div>
@@ -172,7 +184,7 @@ $session = new Container('transcript');
                                             </li>
 
                                             <li>
-                                                <a href="<?php echo $this->url('transcript', array('action' => 'edit', 'id' => $transcript['id'])); ?>" class="tooltip-success" data-rel="tooltip" title="Edit">
+                                                <a href="<?php echo $this->url('transcript', array('action' => 'edit', 'id' => $transcript->id)); ?>" class="tooltip-success" data-rel="tooltip" title="Edit">
                                                     <span class="green">
                                                         <i class="icon-edit bigger-120"></i>
                                                     </span>

@@ -130,9 +130,42 @@ $daterange=$session->offsetGet('daterange');
                                     <span class="lbl"></span>
                                 </label>
                             </td>
-                            <td><?php echo $lead->caller_type; ?></td>
+                            <td><?php 
+                            if($lead->caller_type == 1){
+                                echo "Poten Newclient";
+                            }else if($lead->caller_type == 2){
+                                echo "Non-client";
+                            
+                            }else if($lead->caller_type == 3){
+                               echo "Soliciter";
+                            
+                            }else if($lead->caller_type == 4){
+                                echo "Current Client";
+                            
+                            }else if($lead->caller_type == 5){
+                                echo "Repeated";
+                            
+                            }else if($lead->caller_type == 6){
+                                 echo "Web Form";
+                            
+                            }else if($lead->caller_type == 7){
+                                echo "Test call";
+                            }else{
+                                echo "No Recording";
+                            }
+                            ?></td>
                             <td><?php echo $lead->lead_date; ?></td>
-                            <td><?php echo $lead->lead_source; ?></td>
+                            <td><?php
+                            if($lead->lead_source == 1){
+                                echo "Website-NY";
+                            }else if($lead->lead_source == 2){
+                                echo "Contact Form";
+                            
+                            }else {
+                               echo "Book Download";
+                            
+                            }
+                            ?></td>
                             <td><?php echo $lead->inc_phone; ?></td>
                             <td><?php echo $lead->call_duration; ?></td>
                             <td><?php echo $lead->lead_name; ?></td>
