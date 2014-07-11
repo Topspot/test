@@ -4,6 +4,7 @@ use Zend\Session\Container;
 
 $session = new Container('lead');
 $daterange=$session->offsetGet('daterange');
+
 ?>
 <div class="row">
     <div class="col-xs-12"> 
@@ -82,11 +83,16 @@ $daterange=$session->offsetGet('daterange');
                 </select>
 
             </div>
-<!--            <form action="/lead/exportdata" method="post">
-            <input type="hidden" name="id" value="<?php //echo $website_data; ?>" />
-            <input type="submit" name="submit" value="Export All" class="btn btn-grey pull-right" style="margin-right: 10px;"/>
-            </form>-->
-            <a href="#" onclick="exportAll(<?php // echo $website_data; ?>);" class="btn btn-grey pull-right" data-id="transcript" style="margin-right: 10px;">Export</a>
+            <?php 
+//            print_r("hello");exit;
+                $num=0;
+                        foreach ($website_data as $leadd) {                            
+                            $session->offsetSet('leadobject'.$num, $leadd);
+                            $num=$num+1;
+                        }    
+            ?>
+
+            <a href="/lead/exportdata/<?php echo $num-1; ?>" class="btn btn-grey pull-right" data-id="transcript" style="margin-right: 10px;">Export</a>
 
         </div>
 
@@ -116,7 +122,7 @@ $daterange=$session->offsetGet('daterange');
 
                         <?php
 //                         print_r($website_data);
-                        foreach ($website_data as $lead) {                         
+                        foreach ($website_data as $lead) {
                             ?>
                             <td class="center">
                                 <label>

@@ -26,9 +26,17 @@ use Clients\Form\EditLeadFilter;
 use PHPExcel;
 use Excel2007;
 use IOFactory;
+//use Zend\Session\Container; // We need this when using sessions
+//use Zend\Session\Storage\ArrayStorage;
+//use Zend\Session\SessionManager;
 
 class LeadController extends AbstractActionController {
 
+    protected $alldata;
+//     public function __construct()
+//    {
+////        $this->alldata='';
+//    }
     public function leaddataAction() {
         if ($_POST) {
             $data = $_POST;
@@ -66,65 +74,10 @@ class LeadController extends AbstractActionController {
     public function indexAction() {
 
         if ($user = $this->identity()) {
-////            ini_set("display_errors", "1");
-////            error_reporting(E_ALL & ~E_NOTICE);
-//
-//// Create new PHPExcel object
-//$objPHPExcel = new PHPExcel();
-//
-//// Set document properties
-//$objPHPExcel->getProperties()->setCreator("Maarten Balliauw")
-//							 ->setLastModifiedBy("Maarten Balliauw")
-//							 ->setTitle("Office 2007 XLSX Test Document")
-//							 ->setSubject("Office 2007 XLSX Test Document")
-//							 ->setDescription("Test document for Office 2007 XLSX, generated using PHP classes.")
-//							 ->setKeywords("office 2007 openxml php")
-//							 ->setCategory("Test result file");
-//
-//
-//// Add some data
-//$objPHPExcel->setActiveSheetIndex(0)
-//            ->setCellValue('A1', 'Hello')
-//            ->setCellValue('B1', 'world!')
-//            ->setCellValue('C1', 'Hello')
-//            ->setCellValue('D1', 'world!');
-//$objPHPExcel->getActiveSheet()->getStyle('A1:D1')->getFont()->setBold(true);
-//// Miscellaneous glyphs, UTF-8
-////$objPHPExcel->setActiveSheetIndex(0)
-////            ->setCellValue('A4', 'Miscellaneous glyphs')
-////            ->setCellValue('A5', 'Ã©Ã Ã¨Ã¹Ã¢ÃªÃ®Ã´Ã»Ã«Ã¯Ã¼Ã¿Ã¤Ã¶Ã¼Ã§');
-//
-//// Rename worksheet
-//$objPHPExcel->getActiveSheet()->setTitle('Simple');
-//
-//
-//// Set active sheet index to the first sheet, so Excel opens this as the first sheet
-//$objPHPExcel->setActiveSheetIndex(0);
-//
-//
-//// Redirect output to a clientâ€™s web browser (Excel2007)
-//header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-//header('Content-Disposition: attachment;filename="01simple.xlsx"');
-//header('Cache-Control: max-age=0');
-//// If you're serving to IE 9, then the following may be needed
-//header('Cache-Control: max-age=1');
-//
-//// If you're serving to IE over SSL, then the following may be needed
-//header ('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-//header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); // always modified
-//header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
-//header ('Pragma: public'); // HTTP/1.0
-//
-//$objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-//$objWriter->save('php://output');
-//exit;
-//            print_r($objPHPExcel);exit;
             $id = (int) $this->params()->fromRoute('id', 0);
 
             $session = new Container('lead');
             $session->offsetSet('lead_client_id', $id);
-
-
             if (!$id) {
                 print_r("cant find ID");
                 exit;
@@ -134,13 +87,13 @@ class LeadController extends AbstractActionController {
 
             $tableGateway = $this->getConnection();
             $leadTable = new LeadTable($tableGateway);
+           
             if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
                 $current_website_id = $session->offsetGet('current_website_id');
                 if ($session->offsetExists('from') && $session->offsetGet('from') != '') {
-//                print_r("in");
+
                     $current_website_lead = $this->setDateRange();
 
-//                print_r($current_website_lead);exit;
                 } else {
                     $current_website_lead = $leadTable->getLeadWebsite($current_website_id);
                 }
@@ -162,7 +115,6 @@ class LeadController extends AbstractActionController {
                     ));
                 }
             } else {
-
                 $client_websites = $websiteTable->getWebsiteClients($id);
 
                 foreach ($client_websites as $value) {
@@ -170,11 +122,9 @@ class LeadController extends AbstractActionController {
                     $current_website_lead = $leadTable->getLeadWebsite($value->id);
                     break;
                 }
-//                 $session->offsetSet('lead_client_id', $id);
-//                $sessionNamespace = new Zend_Session_Namespace();
-//                $sessionNamespace->array = array();
-//                $sessionNamespace->array['testKey'] = 1;
-//                echo $sessionNamespace->array['testKey'];exit;
+               
+                $this->alldata=$current_website_lead;
+
                 $viewModel = new ViewModel(array(
                     'client_websites' => $client_websites,
                     'website_data' => $current_website_lead,
@@ -189,7 +139,74 @@ class LeadController extends AbstractActionController {
     }
 
     public function exportdataAction() {
-        print_r("Export data");exit;
+         $num = (int) $this->params()->fromRoute('id', 0);    
+ $session = new Container('lead');
+//                    ini_set("display_errors", "1");
+//            error_reporting(E_ALL & ~E_NOTICE);
+
+// Create new PHPExcel object
+$objPHPExcel = new PHPExcel();
+
+// Set document properties
+$objPHPExcel->getProperties()->setCreator("Maarten Balliauw")
+							 ->setLastModifiedBy("Maarten Balliauw")
+							 ->setTitle("Office 2007 XLSX Test Document")
+							 ->setSubject("Office 2007 XLSX Test Document")
+							 ->setDescription("Test document for Office 2007 XLSX, generated using PHP classes.")
+							 ->setKeywords("office 2007 openxml php")
+							 ->setCategory("Test result file");
+
+
+
+// Add some data
+$objPHPExcel->setActiveSheetIndex(0)
+            ->setCellValue('A1', 'Caller Type')
+            ->setCellValue('B1', 'Lead Date')
+            ->setCellValue('C1', 'Lead Source')
+            ->setCellValue('D1', 'Incomming Ph')
+            ->setCellValue('E1', 'Call Duration')
+            ->setCellValue('F1', 'Leads Name')
+            ->setCellValue('G1', 'Leads email');
+
+$objPHPExcel->getActiveSheet()->getStyle('A1:G1')->getFont()->setBold(true);
+            for($i=0;$i <= $num;$i++){
+            $data =$session->offsetGet('leadobject'.$i);
+            $cell=$i+2;
+            $objPHPExcel->setActiveSheetIndex(0)
+            ->setCellValue('A'.$cell, $data->caller_type)
+            ->setCellValue('B'.$cell, $data->lead_date)
+            ->setCellValue('C'.$cell, $data->lead_source)
+            ->setCellValue('D'.$cell, $data->inc_phone)
+            ->setCellValue('E'.$cell, $data->call_duration)
+            ->setCellValue('F'.$cell, $data->lead_name)
+            ->setCellValue('G'.$cell, $data->lead_email);
+         }
+
+// Rename worksheet
+$objPHPExcel->getActiveSheet()->setTitle('Simple');
+
+
+// Set active sheet index to the first sheet, so Excel opens this as the first sheet
+$objPHPExcel->setActiveSheetIndex(0);
+
+
+// Redirect output to a clientâ€™s web browser (Excel2007)
+header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+header('Content-Disposition: attachment;filename="01simple.xlsx"');
+header('Cache-Control: max-age=0');
+// If you're serving to IE 9, then the following may be needed
+header('Cache-Control: max-age=1');
+
+// If you're serving to IE over SSL, then the following may be needed
+header ('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); // always modified
+header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+header ('Pragma: public'); // HTTP/1.0
+
+$objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+$objWriter->save('php://output');
+exit;
+
     }
         
     public function addAction() {

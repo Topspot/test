@@ -85,6 +85,7 @@ class LeadTable {
 //            print_r($row);
 //                        exit();
 //        }
+         $rowset->buffer();
         return $rowset;
     }
 
