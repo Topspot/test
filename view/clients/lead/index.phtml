@@ -4,6 +4,8 @@ use Zend\Session\Container;
 
 $session = new Container('lead');
 $daterange=$session->offsetGet('daterange');
+use Zend\Authentication\AuthenticationService;
+$auth = new AuthenticationService();
 
 ?>
 <div class="row">
@@ -49,9 +51,20 @@ $daterange=$session->offsetGet('daterange');
                </div>
             </div>             
         </div>    
-        <div class="table-header">
-            <a href="/lead/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Lead</a>
+        <div class="table-header" style="min-height: 42px;">
+            
+            <?php if($auth->getIdentity()->roles_id == 3){
+                             ?>
+                                 
+                                 <?php
+                                }else{
+                            ?>   
+            <!--<a href="/lead/add/<?php //echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Lead</a>-->
             <a href="#" class="btn btn-danger pull-right multiple-delete" data-id="lead">Delete Selected Leads</a>
+                        <?php
+                              } 
+                          ?>
+            
             <div class="pull-right">
 
                 <select class="form-control" id="form-field-select-1" data-id="lead" style="width: 300px; margin-right: 15px; margin-top: 5px;">
@@ -113,7 +126,16 @@ $daterange=$session->offsetGet('daterange');
                         <th>Call Duration</th>
                         <th>Leads Name</th>
                         <th>Leads email</th>
+                        <?php if($auth->getIdentity()->roles_id == 3){
+                                   ?>
+                                <th class="hidden"></th>
+                                <?php
+                                }else{
+                            ?>   
                         <th>Actions</th>
+                        <?php
+                              } 
+                                ?>
                     </tr>
                 </thead>
 
@@ -170,7 +192,13 @@ $daterange=$session->offsetGet('daterange');
                             <td><?php echo $lead->call_duration; ?></td>
                             <td><?php echo $lead->lead_name; ?></td>
                             <td><?php echo $lead->lead_email; ?></td>
-
+                             <?php if($auth->getIdentity()->roles_id == 3){
+                                    ?>
+                             <td class="hidden"></td>
+                                <?php
+                              
+                                }else{
+                            ?>   
                             <td>
                                 <div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
                                     <a class="blue" href="#">
@@ -220,6 +248,9 @@ $daterange=$session->offsetGet('daterange');
                                     </div>
                                 </div>
                             </td>
+                           <?php
+                              } 
+                                ?>                               
                         </tr>
                   <?php } ?>              
                 </tbody>

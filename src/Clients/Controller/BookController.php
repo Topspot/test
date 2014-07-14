@@ -27,6 +27,7 @@ class BookController extends AbstractActionController {
 
     public function indexAction() {
         if ($user = $this->identity()) {
+           
             $id = (int) $this->params()->fromRoute('id', 0);
             $session = new Container('book');
             $session->offsetSet('book_client_id', $id);
@@ -43,14 +44,15 @@ class BookController extends AbstractActionController {
 
             $tableGateway = $this->getConnection();
             $bookTable = new BookTable($tableGateway);
-
+            
             if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
                 $current_website_id = $session->offsetGet('current_website_id');
                 if ($session->offsetExists('from') && $session->offsetGet('from') != '') {
                     $current_website_book = $this->setDateRange();
-//                print_r($current_website_book);exit;
                 } else {
+                                    
                     $current_website_book = $bookTable->getBookWebsite($current_website_id);
+//                     print_r($current_website_book);exit;
                 }
 
 
@@ -79,7 +81,7 @@ class BookController extends AbstractActionController {
                     $current_website_book = $bookTable->getBookWebsite($value->id);
                     break;
                 }
-// print_r("hello");exit();
+
                 $viewModel = new ViewModel(array(
                     'client_websites' => $client_websites,
                     'website_data' => $current_website_book,
@@ -121,8 +123,6 @@ class BookController extends AbstractActionController {
                 $session->offsetSet('msg', "Book has been successfully Added.");
                 return $this->redirect()->toUrl('/book/index/' . $book_client_id);
             }
-
-
             $viewModel = new ViewModel(array('form' => $form, 'id' => $id));
             return $viewModel;
         } else {

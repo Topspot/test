@@ -1,8 +1,9 @@
 <?php
 
 use Zend\Session\Container;
-
+use Zend\Authentication\AuthenticationService;
 $session = new Container('transcript');
+$auth = new AuthenticationService();
 ?>
 <div class="row">
     <div class="col-xs-12"> 
@@ -57,9 +58,19 @@ $session = new Container('transcript');
                     </div>
             </div>
         </div>-->
-        <div class="table-header">
-            <a href="/transcript/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Transcript</a>
+        <div class="table-header" style="min-height: 42px;">
+             <?php if($auth->getIdentity()->roles_id == 3){
+                             ?>
+                                 
+                                 <?php
+                                }else{
+                            ?>   
+           <a href="/transcript/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Transcript</a>
             <a href="#" class="btn btn-danger pull-right multiple-delete" data-id="transcript">Delete Selected Transcripts</a>
+                        <?php
+                              } 
+                          ?>
+            
             
             <div class="pull-right">
 
@@ -122,7 +133,16 @@ $session = new Container('transcript');
                         <th class="hidden"></th>
                         <th class="hidden"></th>
                         <th class="hidden"></th>
-                        <th>Action</th>
+                         <?php if($auth->getIdentity()->roles_id == 3){
+                                   ?>
+                                <th class="hidden"></th>
+                                <?php
+                                }else{
+                            ?>   
+                        <th>Actions</th>
+                        <?php
+                              } 
+                                ?>
                     </tr>
                 </thead>
 
@@ -149,7 +169,12 @@ $session = new Container('transcript');
                             <td class="hidden"></td>
                             <td class="hidden"></td>
                             <td class="hidden"></td>
-
+                             <?php if($auth->getIdentity()->roles_id == 3){
+                                ?>
+                                 <td class="hidden"></td>
+                                 <?php
+                                }else{
+                            ?>   
                             <td>
                                 <div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
                                     <a class="blue" href="#">
@@ -209,6 +234,9 @@ $session = new Container('transcript');
                                     </div>
                                 </div>
                             </td>
+                            <?php
+                              } 
+                                ?>
                         </tr>
                   <?php } ?>              
                 </tbody>

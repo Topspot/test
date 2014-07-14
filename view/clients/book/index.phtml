@@ -1,13 +1,15 @@
 <?php
 
 use Zend\Session\Container;
-
+use Zend\Authentication\AuthenticationService;
 $session = new Container('book');
+$daterange=$session->offsetGet('daterange');
+$auth = new AuthenticationService();
 ?>
 <div class="row">
     <div class="col-xs-12"> 
         <?php
-//         print_r($message);;
+//         print_r($website_data);exit;
         if (isset($message) && $message != '') {
             if ($message == "Book has been successfully Deleted.") {
                 ?>
@@ -57,10 +59,19 @@ $session = new Container('book');
                     </div>
             </div>
         </div>-->
-        <div class="table-header">
-            <a href="/book/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Book</a>
+        <div class="table-header" style="min-height: 42px;">
+             <?php if($auth->getIdentity()->roles_id == 3){
+                             ?>
+                                 
+                                 <?php
+                                }else{
+                            ?>   
+             <a href="/book/add/<?php echo $current_website_id; ?>" id="addbuttonbook" class="btn btn-primary">Add New Book</a>
             <a href="#" class="btn btn-danger pull-right multiple-delete" data-id="book">Delete Selected Books</a>
-            
+                        <?php
+                              } 
+                          ?>
+           
             <div class="pull-right">
 
                 <select class="form-control" id="form-field-select-1" data-id="book" style="width: 300px; margin-right: 15px; margin-top: 5px;">
@@ -68,7 +79,6 @@ $session = new Container('book');
                         <?php
                         foreach ($client_websites as $website) {
                             if ($current_website_id == $website->id) {
-                                $session->offsetSet('book_website_id', $website->id);
                                 ?>
                                 <option value="<?php echo $website->id ?>"><?php echo $website->website ?></option>
                             <?php }
@@ -93,7 +103,15 @@ $session = new Container('book');
                 </select>
 
             </div>
-            <!--<a href="#" onclick="downloadAll(<?php //echo $current_website_id; ?>);" class="btn btn-grey pull-right" data-id="book" style="margin-right: 10px;">Download All</a>-->
+             <?php
+             $num=0;
+                        foreach ($website_data as $transcriptt) {                            
+                            $session->offsetSet('leadobject'.$num, $transcriptt);
+                            $num=$num+1;
+                        }    
+            ?>
+
+            <a href="/book/exportdata/<?php echo $num-1; ?>" class="btn btn-grey pull-right" data-id="book" style="margin-right: 10px;">Export</a>
 
         </div>
 
@@ -107,12 +125,24 @@ $session = new Container('book');
                                 <span class="lbl"></span>
                             </label>
                         </th>
-                        <th>Name</th>     
-                        <th class="hidden">Date Recevied</th>
-                        <th class="hidden">Date Posted</th>
-                        <th class="hidden">Date Revised</th>                                     
+                        <th>Name</th>                
+
                         <th class="hidden"></th>
-                        <th></th>
+                        <th class="hidden"></th>
+                        <th class="hidden"></th>
+                        <th class="hidden"></th>
+                        <th class="hidden"></th>
+                        <th class="hidden"></th>
+                        <?php if($auth->getIdentity()->roles_id == 3){
+                                   ?>
+                                <th class="hidden"></th>
+                                <?php
+                                }else{
+                            ?>   
+                        <th>Actions</th>
+                        <?php
+                              } 
+                                ?>
                     </tr>
                 </thead>
 
@@ -125,35 +155,40 @@ $session = new Container('book');
                             ?>
                             <td class="center">
                                 <label>
-                                    <input type="checkbox" class="ace" data-id="<?php echo $book['id']; ?>" />
+                                    <input type="checkbox" class="ace" data-id="<?php echo $book->id; ?>" />
                                     <span class="lbl"></span>
                                 </label>
                             </td>
 
                             <td>
-                             <?php echo $book['name']; ?>
-                            </td>
-                            <td class="hidden"><?php echo $book['date_posted']; ?></td>
-                            <td class="hidden"><?php echo $book['date_received']; ?></td>
-                            <td class="hidden"><?php echo $book['date_revised']; ?></td>
+                             <?php echo $book->name; ?>
+                            </td>                      
                             <td class="hidden"></td>
-
+                            <td class="hidden"></td>
+                            <td class="hidden"></td>
+                            <td class="hidden"></td>
+                            <td class="hidden"></td>
+                            <td class="hidden"></td>
+                            <?php if($auth->getIdentity()->roles_id == 3){
+                                  ?>
+                                <td class="hidden"></td>
+                                <?php
+                               
+                                }else{
+                            ?>   
                             <td>
                                 <div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
                                     <a class="blue" href="#">
                                         <i class="icon-zoom-in bigger-130"></i>
                                     </a>
 
-                                    <a class="green" href="<?php echo $this->url('book', array('action' => 'edit', 'id' => $book['id'])); ?>">
+                                    <a class="green" href="<?php echo $this->url('book', array('action' => 'edit', 'id' => $book->id)); ?>">
                                         <i class="icon-pencil bigger-130"></i>
                                     </a>
                                     <!--<a href="<?php //echo $this->url('clients', array('action' => 'dialoge', 'id' => $client->id));   ?>" class="tooltip-error" data-rel="tooltip" title="Dialoge">-->
-                                    <a href="#" role="button" class="red" onclick="deleterow(<?php echo $book['id']; ?>,'book');"> 
+                                    <a href="#" role="button" class="red" onclick="deleterow(<?php echo $book->id; ?>,'book');"> 
                                         <i class="icon-trash bigger-130"></i>
                                     </a>
-<!--                                    <a href="<?php //echo $this->url('book', array('action' => 'download', 'id' => $book['id'])); ?>" class="gray" > 
-                                        <i class="icon-download bigger-130"></i>
-                                    </a>-->
                                 </div>
 
                                 <div class="visible-xs visible-sm hidden-md hidden-lg">
@@ -172,7 +207,7 @@ $session = new Container('book');
                                             </li>
 
                                             <li>
-                                                <a href="<?php echo $this->url('book', array('action' => 'edit', 'id' => $book['id'])); ?>" class="tooltip-success" data-rel="tooltip" title="Edit">
+                                                <a href="<?php echo $this->url('book', array('action' => 'edit', 'id' => $book->id)); ?>" class="tooltip-success" data-rel="tooltip" title="Edit">
                                                     <span class="green">
                                                         <i class="icon-edit bigger-120"></i>
                                                     </span>
@@ -186,17 +221,13 @@ $session = new Container('book');
                                                     </span>
                                                 </a>
                                             </li>
-                                            <li>
-                                                <a href="<?php echo $this->url('clients', array('action' => 'delete', 'id' => $client->id)); ?>" class="tooltip-error" data-rel="tooltip" title="Delete">
-                                                    <span class="gray">
-                                                        <i class="icon-download bigger-120"></i>
-                                                    </span>
-                                                </a>
-                                            </li>
                                         </ul>
                                     </div>
                                 </div>
                             </td>
+                             <?php
+                              } 
+                                ?>
                         </tr>
                   <?php } ?>              
                 </tbody>
@@ -212,7 +243,7 @@ $session = new Container('book');
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
                         <span class="white">&times;</span>
                     </button>
-                    Delete Link
+                    Delete Book
                 </div>
             </div>
 
@@ -243,3 +274,4 @@ $session->offsetSet('from', '');
 $session->offsetSet('till', '');
 $session->offsetSet('msg', '');
 ?>
+

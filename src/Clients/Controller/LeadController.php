@@ -33,12 +33,7 @@ use IOFactory;
 
 class LeadController extends AbstractActionController {
 
-    protected $alldata;
 
-//     public function __construct()
-//    {
-////        $this->alldata='';
-//    }
     public function leaddataAction() {
         if ($_POST) {
             $data = $_POST;
@@ -69,6 +64,7 @@ class LeadController extends AbstractActionController {
             $lead->lead_name = $data['lead_name'];
             $lead->lead_email = $data['lead_email'];
             $id = $leadTable->saveLead($lead);
+            print_r($id);exit;
             return 0;
         }
     }
@@ -124,15 +120,12 @@ class LeadController extends AbstractActionController {
                     break;
                 }
 
-                $this->alldata = $current_website_lead;
-
                 $viewModel = new ViewModel(array(
                     'client_websites' => $client_websites,
                     'website_data' => $current_website_lead,
                     'current_website_id' => $current_website_id
                 ));
             }
-
             return $viewModel;
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
