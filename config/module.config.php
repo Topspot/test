@@ -8,6 +8,7 @@ return array(
             'Clients\Controller\Lead' => 'Clients\Controller\LeadController',
             'Clients\Controller\Transcript' => 'Clients\Controller\TranscriptController',
             'Clients\Controller\Book' => 'Clients\Controller\BookController',
+            'Clients\Controller\Googleapi' => 'Clients\Controller\GoogleapiController',
         ),
     ),
     'router' => array(
@@ -97,6 +98,20 @@ return array(
                     ),
                     'defaults' => array(
                         'controller' => 'Clients\Controller\Book',
+                        'action' => 'index',
+                    ),
+                ),
+            ),
+            'googleapi' => array(
+                'type' => 'Segment',
+                'options' => array(
+                    'route' => '/googleapi[/:action][/:id]',
+                    'constraints' => array(
+                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'Clients\Controller\Googleapi',
                         'action' => 'index',
                     ),
                 ),
