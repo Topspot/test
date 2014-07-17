@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -16,9 +15,14 @@ use Zend\Authentication\AuthenticationService;
 use Zend\Authentication\Storage\Session as SessionStorage;
 use Zend\Db\Adapter\Adapter as DbAdapter;
 use Zend\Authentication\Adapter\DbTable as AuthAdapter;
-//use gapi;
-use Google_Client;
-use Google_AnalyticsService;
+use gapi;
+//use Google_Client;
+//use Google_AnalyticsService;
+
+//use GData;
+//use App;
+//use Analytics;
+//use ClientLogin;
 
 /* Set your Google Analytics credentials */
 
@@ -30,102 +34,65 @@ class GoogleapiController extends AbstractActionController {
     /* Set your Google Analytics credentials */
 
     public function indexAction() {
+//        $ga = new gapi('lisapelosi1@gmail.com', 'Topspot@123');
+        $ga = new gapi('seolawyers2012@gmail.com ', '9382devilx');
+        /* We are using the 'source' dimension and the 'visits' metrics */
+//        $dimensions = array('landingPagePath');
+        $dimensions = array('channelGrouping');
 
-        ########## Google Settings.. Client ID, Client Secret #############
-        $google_client_id = '538954842329-s0n51258qhi195ascgn7sccqbsko6u2s.apps.googleusercontent.com';
-        $google_client_secret = 'PANzHe2kkHgMyLMWp3uRpEp1';
-        $google_redirect_url = 'http://dashboard.speakeasymarketinginc.com/googleapi/updatedone';
-        $page_url_prefix = 'https://www.arizdui.com';
+//        $metrics = array('pageviews');
+        $metrics = array('sessions');
+        $filter = 'channelGrouping == Organic Search';
+//        $fromDate = date('Y-m-d', strtotime('-2 days'));
+//        $toDate = date('Y-m-d');
+        /* We will sort the result be desending order of visits, 
+          and hence the '-' sign before the 'visits' string */
+//        $ga->requestReportData('76725909', $dimensions, $metrics, '-visits');
+        $ga->requestReportData('66890150', $dimensions, $metrics, '-sessions',$filter,'2014-06-16','2014-07-16',1,10);
 
-        ########## Google analytics Settings.. #############
-        $google_analytics_profile_id = 'ga:123456'; //Analytics site Profile ID
-        $google_analytics_dimensions = 'ga:landingPagePath,ga:pageTitle'; //no change needed (optional)
-        $google_analytics_metrics = 'ga:pageviews'; //no change needed (optional)
-        $google_analytics_sort_by = '-ga:pageviews'; //no change needed (optional)
-        $google_analytics_max_results = '20'; //no change needed (optional)
-       
-        //start session
-        session_start();
-        
-        $gClient = new Google_Client();
-        $gClient->setApplicationName('Login to saaraan.com');
-        $gClient->setClientId($google_client_id);
-        $gClient->setClientSecret($google_client_secret);
-        $gClient->setRedirectUri($google_redirect_url);
-        $gClient->setScopes(array('https://www.googleapis.com/auth/analytics.readonly'));
-        $gClient->setUseObjects(true);
+        $gaResults = $ga->getResults();
 
-// echo "enter middle";exit;
-//check for session variable
-        
-       if(!isset($_SESSION["token"])){
-                $gClient->authenticate();
-                $token = $gClient->getAccessToken();
-                $_SESSION["token"] = $token;
-       }  
-//         print_r($_SESSION);exit;
-        if (isset($_SESSION["token"])) {
-             print_r("session");exit;
-            //set start date to previous month
-            $start_date = date("Y-m-d", strtotime("-1 month"));
+        $i = 1;
+        ?>
+        <table>
+            <tr>
 
-            //end date as today
-            $end_date = date("Y-m-d");
+                
+                <th>Paths</th>
+                <th>Pageviews</th>
+<!--                <th>Visits</th>
+                <th>source</th>
+                <th>region</th>-->
+            </tr>
 
-            try {
-                //set access token
-                $gClient->setAccessToken($_SESSION["token"]);
 
-                //create analytics services object
-                $analyticsService = new Google_AnalyticsService($gClient);
-
-                //analytics parameters (check configuration file)
-                $params = array('dimensions' => $google_analytics_dimensions, 'sort' => $google_analytics_sort_by, 'filters' => 'ga:medium==organic', 'max-results' => $google_analytics_max_results);
-
-                //get results from google analytics
-                $results = $analyticsService->data_ga->get($google_analytics_profile_id, $start_date, $end_date, $google_analytics_metrics, $params);
-            } catch (Exception $e) { //do we have an error?
-                echo $e->getMessage(); //display error
-            }
-
-            $pages = array();
-            $rows = $results->rows;
-
-            if ($rows) {
-                echo '<ul>';
-                foreach ($rows as $row) {
-                    //prepare values for db insert
-                    $pages[] = '("' . $row[0] . '","' . $row[1] . '",' . $row[2] . ')';
-
-                    //output top page link
-                    echo '<li><a href="' . $page_url_prefix . $row[0] . '">' . $row[1] . '</a></li>';
-                }
-                echo '</ul>';
-                exit();
-                //empty table
-                $mysqli->query("TRUNCATE TABLE google_top_pages");
-
-                //insert all new top pages in the table
-                if ($mysqli->query("INSERT INTO google_top_pages (page_uri, page_title, total_views) VALUES " . implode(',', $pages) . "")) {
-                    echo '<br />Records updated...';
-                } else {
-                    echo $mysqli->error;
-                }
-            }
-        } else {
-            print_r("auth");exit;
-//            //authenticate user
-//            if (isset($_GET['code'])) {
-//                 print_r("code");exit;
-//                $gClient->authenticate();
-//                $token = $gClient->getAccessToken();
-//                $_SESSION["token"] = $token;
-//                header('Location: ' . filter_var($google_redirect_url, FILTER_SANITIZE_URL));
-//            } else {
-//                 print_r("no-code");exit;
-//                $gClient->authenticate();
-//            }
+            <?php
+            foreach ($gaResults as $result) {
+                ?>
+                <tr>
+                  <td><?php echo $result ?></td>
+                    <td><?php echo $result->getSessions() ?></td>
+                    <!--<td><?php// echo $result->getLandingpagepath() ?></td>-->
+                     <!--<td><?php //echo $result->getVisits() ?></td>-->
+<!--                    <td><?php //echo $result->getVisitors() ?></td>
+                   
+                    <td><?php //echo $result->getSource() ?></td>
+                    <td><?php //echo $result->getRegion() ?></td>-->
+                </tr>
+            <?php
+//                     echo '<strong>'.$result.'</strong><br />';
+//  echo 'Source: ' . $result->getSource() . ' ';
+//  echo 'Visits: ' . $result->getVisits() . '<br />';
+//  echo 'Region: ' . $result->getRegion() . '<br />';
+//  echo 'Page Views: ' . $result->UniquePageviews() . '<br />';
+//            printf("%-4d %-40s %5d\n", $i++, $result->getSource(), $result->getVisits());
         }
+        ?>
+        </table>
+        <?php
+//        echo "Total Results : {$ga->getTotalResults()}";
+//        echo '<p>Total Source: ' . $ga->getSource() . ' total visits: ' . $ga->getVisits() . '</p>';
+        exit;
     }
 
 }
