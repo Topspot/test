@@ -16,13 +16,6 @@ use Zend\Authentication\Storage\Session as SessionStorage;
 use Zend\Db\Adapter\Adapter as DbAdapter;
 use Zend\Authentication\Adapter\DbTable as AuthAdapter;
 use gapi;
-//use Google_Client;
-//use Google_AnalyticsService;
-
-//use GData;
-//use App;
-//use Analytics;
-//use ClientLogin;
 
 /* Set your Google Analytics credentials */
 

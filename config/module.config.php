@@ -9,6 +9,7 @@ return array(
             'Clients\Controller\Transcript' => 'Clients\Controller\TranscriptController',
             'Clients\Controller\Book' => 'Clients\Controller\BookController',
             'Clients\Controller\Googleapi' => 'Clients\Controller\GoogleapiController',
+            'Clients\Controller\UserRight' => 'Clients\Controller\UserRightController',
         ),
     ),
     'router' => array(
@@ -112,6 +113,20 @@ return array(
                     ),
                     'defaults' => array(
                         'controller' => 'Clients\Controller\Googleapi',
+                        'action' => 'index',
+                    ),
+                ),
+            ),
+            'userright' => array(
+                'type' => 'Segment',
+                'options' => array(
+                    'route' => '/userright[/:action][/:id]',
+                    'constraints' => array(
+                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'Clients\Controller\UserRight',
                         'action' => 'index',
                     ),
                 ),

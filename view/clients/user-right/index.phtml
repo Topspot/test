@@ -1,0 +1,215 @@
+<?php
+
+use Zend\Session\Container;
+use Zend\Authentication\AuthenticationService;
+
+$auth = new AuthenticationService();
+?>
+<div class="row">
+    <div class="col-xs-12"> 
+        <?php
+//         print_r($user_data);exit;
+        if (isset($message) && $message != '') {           
+                ?>
+                 <div class="alert alert-block alert-success">
+                    <button type="button" class="close" data-dismiss="alert">
+                        <i class="icon-remove"></i>
+                    </button>
+
+                    <i class="icon-ok green"></i>
+                    <?php echo $message; ?>
+                </div> 
+        <?php           
+        }
+        ?>    
+        <h3 class="header smaller lighter blue current-websiteid" data-id="">UserRights</h3>   
+        <div class="table-header" style="min-height: 42px;">
+
+            <div class="pull-right">
+                <?php
+//                    print_r($id);
+//                    print_r($user_data);exit; 
+                ?>
+                <select class="form-control" id="form-field-select-1" data-id="userright" style="width: 300px; margin-right: 15px; margin-top: 5px;">
+                       
+                    <?php
+                    if (isset($id) && $id!= '') {
+                         
+                        foreach ($user_data as $user) {
+                   
+                            if ($user['id'] == $id) {
+                                ?>
+                                <option value="<?php echo $user['id'] ?>"><?php echo $user['name'] ?></option>
+                                <?php
+                            }
+                        }
+
+                        foreach ($user_data as $user) {
+                            if ($user['id'] != $id) {
+                                ?>
+                                <option value="<?php echo $user['id'] ?>"><?php echo $user['name'] ?></option>
+                                <?php
+                            }
+                        }                       
+                    } else {
+                        ?>  <option value="">Select User</option>  <?php 
+                        foreach ($user_data as $user) {
+                            ?>
+                            <option value="<?php echo $user['id'] ?>"><?php echo $user['name'] ?></option>
+                        <?php                       
+                    } 
+                    
+                        }
+                    ?>      
+
+
+                </select>
+
+            </div>
+
+        </div>
+            <?php if (isset($form)) { ?>
+            <section >
+                <?php
+//                          Debug::dump($this->form);exit;
+                $form = $this->form;
+                $form->prepare();
+                $form->setAttribute('action', $this->url(NULL, array('controller' => 'UserRight', 'action' => 'index', 'id' => $id)));
+                $form->setAttribute('method', 'post');
+                $form->setAttribute('class', 'form-horizontal');
+                $form->setAttribute('id', 'updateUserRight');
+
+                echo $this->form()->openTag($form);
+                ?>
+                <?php echo $this->formElement($form->get('id')); ?>
+                <?php echo $this->formElement($form->get('user_id')); ?>
+                <div class="form-group" style="margin-top: 10px;">
+                    <label class="col-sm-4 control-label no-padding-right" for="form-field-1"> CRUD User </label>
+                    <div class="input-group input-group-sm col-sm-8">
+                        <?php
+                        echo $this->formElement($form->get('crud_user'));
+                        echo $this->formElementErrors($form->get('crud_user'));
+                        ?>
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label no-padding-right" for="form-field-1"> CRUD Client </label>
+                    <div class="input-group input-group-sm col-sm-8">
+                        <?php
+                        echo $this->formElement($form->get('crud_client'));
+                        echo $this->formElementErrors($form->get('crud_client'));
+                        ?>
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label no-padding-right" for="form-field-1"> CRUD Lead </label>
+                    <div class="input-group input-group-sm col-sm-8">
+                        <?php
+                        echo $this->formElement($form->get('crud_lead'));
+                        echo $this->formElementErrors($form->get('crud_lead'));
+                        ?>
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label no-padding-right" for="form-field-1"> CRUD Link </label>
+                    <div class="input-group input-group-sm col-sm-8">
+                        <?php
+                        echo $this->formElement($form->get('crud_link'));
+                        echo $this->formElementErrors($form->get('crud_link'));
+                        ?>
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label no-padding-right" for="form-field-1"> CRUD Traffic </label>
+                    <div class="input-group input-group-sm col-sm-8">
+                        <?php
+                        echo $this->formElement($form->get('crud_traffic'));
+                        echo $this->formElementErrors($form->get('crud_traffic'));
+                        ?>
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label no-padding-right" for="form-field-1"> CRUD Transcript </label>
+                    <div class="input-group input-group-sm col-sm-8">
+                        <?php
+                        echo $this->formElement($form->get('crud_transcript'));
+                        echo $this->formElementErrors($form->get('crud_transcript'));
+                        ?>
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label no-padding-right" for="form-field-1"> CRUD Book </label>
+                    <div class="input-group input-group-sm col-sm-8">
+                        <?php
+                        echo $this->formElement($form->get('crud_book'));
+                        echo $this->formElementErrors($form->get('crud_book'));
+                        ?>
+
+                    </div>
+                </div>
+                <div class="clearfix form-actions">
+                    <div class="col-md-offset-3 col-md-9">                                            
+                        <?php
+                        echo $this->formElement($form->get('submit'));
+                        echo $this->formElementErrors($form->get('submit'));
+                        ?>
+                        &nbsp; &nbsp; &nbsp;
+                        <a href="/userright">
+                        <button class="btn">
+                            <i class="icon-reply bigger-110"></i>
+                            Back
+                        </button>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="hr hr-24"></div>
+            <?php echo $this->form()->closeTag() ?>
+            </section>
+<?php } ?>
+
+
+
+    </div>
+</div>
+<div id="modal-table" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header no-padding">
+                <div class="table-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        <span class="white">&times;</span>
+                    </button>
+                    Delete UserRight
+                </div>
+            </div>
+
+            <div class="modal-body no-padding">
+                <h4 style="margin: 20px 3px;">Are you sure you want to delete ?</h4>
+            </div>
+
+            <div class="modal-footer no-margin-top">
+
+                <button class="btn btn-sm btn-danger pull-left delete_user_btn" data-dismiss="modal">
+                    <i class="icon-remove"></i>
+                    Yes
+                </button>
+
+                <button class="btn btn-sm btn-primary pull-left" data-dismiss="modal">
+                    <i class="icon-only"></i>
+                    Close
+                </button>
+
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal-table -->
+<?php
+$message = '';
+?>

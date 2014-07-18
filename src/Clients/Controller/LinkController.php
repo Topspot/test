@@ -15,6 +15,8 @@ use Zend\View\Model\ViewModel;
 use Zend\Debug\Debug;
 use Clients\Model\Website;
 use Clients\Model\WebsiteTable;
+use Clients\Model\UserRightTable;
+use Clients\Model\UserRight;
 use Clients\Model\Link;
 use Clients\Model\LinkTable;
 use Clients\Form\AddLinkForm;
@@ -46,12 +48,13 @@ class LinkController extends AbstractActionController {
 
             $tableGateway = $this->getConnection();
             $linkTable = new LinkTable($tableGateway);
-
+            $tableGatewayUserRights = $this->getConnectionUserRights();
+            $UserRight = new UserRightTable($tableGatewayUserRights);
+            $applying_user_rights=$UserRight->getUserRightUser($id);
             if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
                 $current_website_id = $session->offsetGet('current_website_id');
                 if ($session->offsetExists('from') && $session->offsetGet('from') != '') {
                     $current_website_link = $this->setDateRange();
-//                print_r($current_website_link);exit;
                 } else {
                     $current_website_link = $linkTable->getLinkWebsite($current_website_id);
                 }
@@ -63,14 +66,17 @@ class LinkController extends AbstractActionController {
                         'client_websites' => $websiteTable->getWebsiteClients($id),
                         'message' => $session->offsetGet('msg'),
                         'website_data' => $current_website_link,
-                        'current_website_id' => $current_website_id
+                        'current_website_id' => $current_website_id,
+                        'applying_user_rights' => $applying_user_rights
+                            
                     ));
                 } else {
                     $viewModel = new ViewModel(array(
                         'client_websites' => $websiteTable->getWebsiteClients($id),
                         'message' => $session->offsetGet('msg'),
                         'website_data' => $current_website_link,
-                        'current_website_id' => $current_website_id
+                        'current_website_id' => $current_website_id,
+                         'applying_user_rights' => $applying_user_rights
                     ));
                 }
             } else {
@@ -79,13 +85,13 @@ class LinkController extends AbstractActionController {
                 foreach ($client_websites as $value) {
                     $current_website_id = $value->id;
                     $current_website_link = $linkTable->getLinkWebsite($value->id);
-//                 print_r($linkTable->getLinkWebsite($value->id));exit;
                     break;
                 }
                 $viewModel = new ViewModel(array(
                     'client_websites' => $client_websites,
                     'website_data' => $current_website_link,
-                    'current_website_id' => $current_website_id
+                    'current_website_id' => $current_website_id,
+                    'applying_user_rights' => $applying_user_rights
                 ));
             }
 
@@ -373,6 +379,15 @@ class LinkController extends AbstractActionController {
         $resultSetPrototype->setArrayObjectPrototype(new
                 \Clients\Model\Website);
         $tableGateway = new \Zend\Db\TableGateway\TableGateway('websites', $dbAdapter, null, $resultSetPrototype);
+        return $tableGateway;
+    }
+    public function getConnectionUserRights() {        // set connection to User Rights table
+        $sm = $this->getServiceLocator();
+        $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+        $resultSetPrototype = new \Zend\Db\ResultSet\ResultSet();
+        $resultSetPrototype->setArrayObjectPrototype(new
+                \Clients\Model\UserRight);
+        $tableGateway = new \Zend\Db\TableGateway\TableGateway('user_rights', $dbAdapter, null, $resultSetPrototype);
         return $tableGateway;
     }
 
