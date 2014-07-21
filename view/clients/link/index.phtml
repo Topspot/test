@@ -41,7 +41,7 @@ $auth = new AuthenticationService();
 
         <div class="row ">
 
-            <div class="well" style="overflow: auto">
+            <div class="well" style="overflow: auto; margin: 0 12px 10px;">
 
                 <div id="reportrange" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
                     <input class="form-control get-date-range hidden" name="date-range-picker" id="date-range-picker" type="text" data-date-format="dd-mm-yyyy" />
@@ -51,15 +51,6 @@ $auth = new AuthenticationService();
             </div>
 
         </div>    
-        <!--        <div class="row ">
-                    <div class="col-xs-8 col-sm-3 pull-left" style="margin-bottom: 10px; padding-top: 10px; padding-bottom: 10px; border: 1px solid #000;">
-                       <div id="reportrange">
-                           <input class="form-control get-date-range hidden" name="date-range-picker" id="id-date-picker-1" type="text" data-date-format="dd-mm-yyyy" />
-                                <i class="icon-calendar bigger-110"></i>
-                                <span><?php //echo date("F j, Y", strtotime('-30 day'));  ?> - <?php echo date("F j, Y"); ?></span> <b class="caret"></b>
-                            </div>
-                    </div>
-                </div>-->
         <div class="table-header" style="min-height: 42px;">
             <?php if ($auth->getIdentity()->roles_id == 3) {
                 ?>
@@ -108,10 +99,9 @@ $auth = new AuthenticationService();
 
                         <?php foreach ($client_websites as $website) {
                             ?>
-                            <option value="<?php echo $website->id ?>"><?php echo $website->website ?></option>
-    <?php } ?>
-<?php }
-?>
+                            <option value="<?php echo $website->id ?>"><?php echo $website->website ?></option>                       
+                    <?php }}
+                    ?>
                 </select>
 
             </div>
@@ -145,16 +135,24 @@ $auth = new AuthenticationService();
                         <th class="hidden"></th>
                         <th class="hidden"></th>
                         <th class="hidden"></th>
+                       
+                        
                         <?php if ($auth->getIdentity()->roles_id == 3) {
-                            ?>
-                            <th class="hidden"></th>
-                            <?php
-                        } else {
+                             ?>   <th class="hidden"></th> <?php
+                        }else if($auth->getIdentity()->roles_id == 2) {
+                                if ($applying_user_rights->crud_link == 1) {
+                                  ?>   
+                            <th>Actions</th>
+                            <?php  
+                                }else{
+                                   ?>   <th class="hidden"></th> <?php
+                                }
+                        }else {
                             ?>   
                             <th>Actions</th>
-    <?php
-}
-?>
+                            <?php
+                        }
+                        ?>
                     </tr>
                 </thead>
 
@@ -172,7 +170,7 @@ $auth = new AuthenticationService();
                             </td>
 
                             <td>
-    <?php echo $link->date; ?>
+                           <?php echo $link->date; ?>
                             </td>
                             <td><?php echo $link->url; ?></td>
 
@@ -183,17 +181,17 @@ $auth = new AuthenticationService();
                             <td class="hidden"></td>
                             <td class="hidden"></td>
                             <td class="hidden"></td>
+                            
+                           
+                       
                             <?php if ($auth->getIdentity()->roles_id == 3) {
-                                ?>
-                                <td class="hidden"></td>
-        <?php
-    } else {
-        ?>   
+                                ?>  <td class="hidden"></td> <?php
+                            } else if($auth->getIdentity()->roles_id == 2) {
+                                if ($applying_user_rights->crud_link == 1) {
+                                            ?>
                                 <td>
                                     <div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
-                                        <?php if ($auth->getIdentity()->roles_id == 2) { 
-                                            if ($applying_user_rights->crud_link == 1) {
-                                            ?>
+
                                         <a class="green" href="<?php echo $this->url('link', array('action' => 'edit', 'id' => $link->id)); ?>">
                                             <i class="icon-pencil bigger-130"></i>
                                         </a>
@@ -201,12 +199,17 @@ $auth = new AuthenticationService();
                                         <a href="#" role="button" class="red" onclick="deleterow(<?php echo $link->id; ?>, 'link');"> 
                                             <i class="icon-trash bigger-130"></i>
                                         </a>
-                                        <?php }else{
-                                            
+                                       
+                                    </div>
+                                </td>    
+                                
+                                <?php }else{
+                                           ?>  <td class="hidden"></td> <?php 
                                         }
-                                        }
-                                        if ($auth->getIdentity()->roles_id == 3) { 
-                                          ?>
+                            }else{ ?>   
+                                <td>
+                                    <div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
+
                                         <a class="green" href="<?php echo $this->url('link', array('action' => 'edit', 'id' => $link->id)); ?>">
                                             <i class="icon-pencil bigger-130"></i>
                                         </a>
@@ -214,10 +217,7 @@ $auth = new AuthenticationService();
                                         <a href="#" role="button" class="red" onclick="deleterow(<?php echo $link->id; ?>, 'link');"> 
                                             <i class="icon-trash bigger-130"></i>
                                         </a>
-                                        <?php    
-                                            
-                                        }
-                                        ?>
+                                       
                                     </div>
 
                                     <div class="visible-xs visible-sm hidden-md hidden-lg">

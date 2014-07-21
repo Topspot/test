@@ -11,6 +11,7 @@
 namespace Clients\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
+use Zend\Authentication\AuthenticationService;
 use Zend\View\Model\ViewModel;
 use Zend\Debug\Debug;
 use Clients\Model\Website;
@@ -35,6 +36,10 @@ class LinkController extends AbstractActionController {
             $id = (int) $this->params()->fromRoute('id', 0);
             $session = new Container('link');
             $session->offsetSet('link_client_id', $id);
+            
+            //get current user data
+            $auth = new AuthenticationService();
+            $user_data=$auth->getIdentity();
 
 
             if (!$id) {
@@ -48,9 +53,14 @@ class LinkController extends AbstractActionController {
 
             $tableGateway = $this->getConnection();
             $linkTable = new LinkTable($tableGateway);
+            
             $tableGatewayUserRights = $this->getConnectionUserRights();
             $UserRight = new UserRightTable($tableGatewayUserRights);
-            $applying_user_rights=$UserRight->getUserRightUser($id);
+             if ($auth->getIdentity()->roles_id == 2) {
+                  $applying_user_rights=$UserRight->getUserRightUser($user_data->usr_id);
+             }else{
+                  $applying_user_rights='';
+             }
             if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
                 $current_website_id = $session->offsetGet('current_website_id');
                 if ($session->offsetExists('from') && $session->offsetGet('from') != '') {

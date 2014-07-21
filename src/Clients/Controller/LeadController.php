@@ -26,6 +26,8 @@ use Clients\Form\EditLeadFilter;
 use PHPExcel;
 use Excel2007;
 use IOFactory;
+use Clients\Model\UserRightTable;
+use Clients\Model\UserRight;
 
 //use Zend\Session\Container; // We need this when using sessions
 //use Zend\Session\Storage\ArrayStorage;
@@ -39,19 +41,19 @@ class LeadController extends AbstractActionController {
             $data = $_POST;
             $tableGatewayWebsite = $this->getConnectionWebsite();
             $websiteTable = new WebsiteTable($tableGatewayWebsite);
-//            $website_data = $websiteTable->getWebsiteByName($data['website']);
-//            if ($website_data) {
-//                $website_id = $website_data->id;
-//            } else {
-//                print_r("Cannot find any Website");
-//                exit;
-//            }
+            $website_data = $websiteTable->getWebsiteByName($data['website']);
+             $lead = new Lead();
+            if ($website_data) {
+                $website_id = $website_data->id;
+                $lead->website_id = $website_id;
+            } else {
+               $lead->website_id = '';
+            }
             $tableGateway = $this->getConnection();
             $leadTable = new LeadTable($tableGateway);
 
-            $lead = new Lead();
+           
             $lead->comments = $data['comments'];
-//            $lead->website_id = $website_id;
             $lead->caller_type = $data['caller_type'];
             $date = explode('/', $data['lead_date']);
             $lead->lead_date = $date[2] . '-' . $date[0] . '-' . $date[1];
@@ -64,7 +66,6 @@ class LeadController extends AbstractActionController {
             $lead->lead_name = $data['lead_name'];
             $lead->lead_email = $data['lead_email'];
             $id = $leadTable->saveLead($lead);
-            print_r($id);exit;
             return 0;
         }
     }
@@ -73,7 +74,10 @@ class LeadController extends AbstractActionController {
 
         if ($user = $this->identity()) {
             $id = (int) $this->params()->fromRoute('id', 0);
-
+             //get current user data
+            $auth = new AuthenticationService();
+            $user_data=$auth->getIdentity();
+            
             $session = new Container('lead');
             $session->offsetSet('lead_client_id', $id);
             if (!$id) {
@@ -85,6 +89,14 @@ class LeadController extends AbstractActionController {
 
             $tableGateway = $this->getConnection();
             $leadTable = new LeadTable($tableGateway);
+            
+            $tableGatewayUserRights = $this->getConnectionUserRights();
+            $UserRight = new UserRightTable($tableGatewayUserRights);
+             if ($auth->getIdentity()->roles_id == 2) {
+                  $applying_user_rights=$UserRight->getUserRightUser($user_data->usr_id);
+             }else{
+                  $applying_user_rights='';
+             }
 
             if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
                 $current_website_id = $session->offsetGet('current_website_id');
@@ -100,7 +112,8 @@ class LeadController extends AbstractActionController {
                         'client_websites' => $websiteTable->getWebsiteClients($id),
                         'message' => $session->offsetGet('msg'),
                         'website_data' => $current_website_lead,
-                        'current_website_id' => $current_website_id
+                        'current_website_id' => $current_website_id,
+                        'applying_user_rights' => $applying_user_rights
                     ));
                 } else {
 
@@ -108,7 +121,8 @@ class LeadController extends AbstractActionController {
                         'client_websites' => $websiteTable->getWebsiteClients($id),
                         'message' => $session->offsetGet('msg'),
                         'website_data' => $current_website_lead,
-                        'current_website_id' => $current_website_id
+                        'current_website_id' => $current_website_id,
+                        'applying_user_rights' => $applying_user_rights
                     ));
                 }
             } else {
@@ -123,7 +137,8 @@ class LeadController extends AbstractActionController {
                 $viewModel = new ViewModel(array(
                     'client_websites' => $client_websites,
                     'website_data' => $current_website_lead,
-                    'current_website_id' => $current_website_id
+                    'current_website_id' => $current_website_id,
+                    'applying_user_rights' => $applying_user_rights
                 ));
             }
             return $viewModel;
@@ -455,6 +470,16 @@ class LeadController extends AbstractActionController {
         $resultSetPrototype->setArrayObjectPrototype(new
                 \Clients\Model\Website);
         $tableGateway = new \Zend\Db\TableGateway\TableGateway('websites', $dbAdapter, null, $resultSetPrototype);
+        return $tableGateway;
+    }
+    
+        public function getConnectionUserRights() {        // set connection to User Rights table
+        $sm = $this->getServiceLocator();
+        $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+        $resultSetPrototype = new \Zend\Db\ResultSet\ResultSet();
+        $resultSetPrototype->setArrayObjectPrototype(new
+                \Clients\Model\UserRight);
+        $tableGateway = new \Zend\Db\TableGateway\TableGateway('user_rights', $dbAdapter, null, $resultSetPrototype);
         return $tableGateway;
     }
 

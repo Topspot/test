@@ -11,6 +11,7 @@
 namespace Clients\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
+use Zend\Authentication\AuthenticationService;
 use Zend\View\Model\ViewModel;
 use Zend\Debug\Debug;
 use Zend\Filter\Compress;
@@ -26,6 +27,8 @@ use Zend\Session\Container;
 use PHPExcel;
 use Excel2007;
 use IOFactory;
+use Clients\Model\UserRightTable;
+use Clients\Model\UserRight;
 
 class TranscriptController extends AbstractActionController {
 
@@ -34,8 +37,10 @@ class TranscriptController extends AbstractActionController {
             $id = (int) $this->params()->fromRoute('id', 0);
             $session = new Container('transcript');
             $session->offsetSet('transcript_client_id', $id);
-
-
+            //get current user data
+            $auth = new AuthenticationService();
+            $user_data=$auth->getIdentity();
+            
             if (!$id) {
                 return $this->redirect()->toRoute(NULL, array(
                             'controller' => 'index',
@@ -47,7 +52,16 @@ class TranscriptController extends AbstractActionController {
 
             $tableGateway = $this->getConnection();
             $transcriptTable = new TranscriptTable($tableGateway);
-
+           
+            $tableGatewayUserRights = $this->getConnectionUserRights();
+            $UserRight = new UserRightTable($tableGatewayUserRights);
+//                        error_reporting(E_ALL);
+//            ini_set('display_errors', '1');
+            if ($auth->getIdentity()->roles_id == 2) {
+            $applying_user_rights=$UserRight->getUserRightUser($user_data->usr_id);
+            }else{
+                $applying_user_rights='';
+            }
             if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
                 $current_website_id = $session->offsetGet('current_website_id');
                 if ($session->offsetExists('from') && $session->offsetGet('from') != '') {
@@ -64,14 +78,16 @@ class TranscriptController extends AbstractActionController {
                         'client_websites' => $websiteTable->getWebsiteClients($id),
                         'message' => $session->offsetGet('msg'),
                         'website_data' => $current_website_transcript,
-                        'current_website_id' => $current_website_id
+                        'current_website_id' => $current_website_id,
+                        'applying_user_rights' => $applying_user_rights
                     ));
                 } else {
                     $viewModel = new ViewModel(array(
                         'client_websites' => $websiteTable->getWebsiteClients($id),
                         'message' => $session->offsetGet('msg'),
                         'website_data' => $current_website_transcript,
-                        'current_website_id' => $current_website_id
+                        'current_website_id' => $current_website_id,
+                        'applying_user_rights' => $applying_user_rights
                     ));
                 }
             } else {
@@ -89,7 +105,8 @@ class TranscriptController extends AbstractActionController {
                 $viewModel = new ViewModel(array(
                     'client_websites' => $client_websites,
                     'website_data' => $current_website_transcript,
-                    'current_website_id' => $current_website_id
+                    'current_website_id' => $current_website_id,
+                    'applying_user_rights' => $applying_user_rights
                 ));
             }
 
@@ -561,6 +578,15 @@ class TranscriptController extends AbstractActionController {
         $resultSetPrototype->setArrayObjectPrototype(new
                 \Clients\Model\Website);
         $tableGateway = new \Zend\Db\TableGateway\TableGateway('websites', $dbAdapter, null, $resultSetPrototype);
+        return $tableGateway;
+    }
+        public function getConnectionUserRights() {        // set connection to User Rights table
+        $sm = $this->getServiceLocator();
+        $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+        $resultSetPrototype = new \Zend\Db\ResultSet\ResultSet();
+        $resultSetPrototype->setArrayObjectPrototype(new
+                \Clients\Model\UserRight);
+        $tableGateway = new \Zend\Db\TableGateway\TableGateway('user_rights', $dbAdapter, null, $resultSetPrototype);
         return $tableGateway;
     }
 

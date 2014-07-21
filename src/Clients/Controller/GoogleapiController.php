@@ -42,8 +42,6 @@ class GoogleapiController extends AbstractActionController {
                 $current_website_id = $value->id;
                 break;
             }
-            error_reporting(E_ALL);
-ini_set('display_errors', '1');
             
             //check if current websute id session is avilable
             if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {

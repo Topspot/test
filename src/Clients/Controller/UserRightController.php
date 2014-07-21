@@ -25,7 +25,8 @@ class UserRightController extends AbstractActionController {
     public function indexAction() {
         if ($user = $this->identity()) {
             $id = (int) $this->params()->fromRoute('id', 0);
-
+//            error_reporting(E_ALL);
+//            ini_set('display_errors', '1');
             $tableGateway = $this->getConnection();
             $userRightTable = new UserRightTable($tableGateway);
 
@@ -85,8 +86,6 @@ class UserRightController extends AbstractActionController {
                 ));
                 return $viewModel;
             }
-            echo "out";
-            exit;
 
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
