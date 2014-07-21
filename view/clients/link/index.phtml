@@ -116,7 +116,7 @@ $auth = new AuthenticationService();
             <a href="/link/exportdata/<?php echo $num - 1; ?>" class="btn btn-grey pull-right" data-id="link" style="margin-right: 10px;">Export</a>
 
         </div>
-
+       <?php if (isset($website_data) && !empty($website_data)) { ?>
         <div class="table-responsive">
             <table id="sample-table-2" class="table table-striped table-bordered table-hover">
                 <thead>
@@ -159,7 +159,7 @@ $auth = new AuthenticationService();
                 <tbody class="linktable">
                     <tr>
                         <?php
-//                         print_r($website_data);
+                         
                         foreach ($website_data as $link) {
                             ?>
                             <td class="center">
@@ -262,6 +262,7 @@ $auth = new AuthenticationService();
                 </tbody>
             </table>
         </div>
+        <?php } ?> 
     </div>
 </div>
 <div id="modal-table" class="modal fade" tabindex="-1">

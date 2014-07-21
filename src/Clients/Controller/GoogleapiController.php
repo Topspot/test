@@ -22,11 +22,13 @@ class GoogleapiController extends AbstractActionController {
 
     public function indexAction() {
         if ($user = $this->identity()) {
+            
             $id = (int) $this->params()->fromRoute('id', 0);
             $session = new Container('googleapi');
 //            $session->getManager()->getStorage()->clear();
             $session->offsetSet('googleapi_client_id', $id);
-
+                        error_reporting(E_ALL);
+            ini_set('display_errors', '1');
             if ($id == 0) {
                 print_r("Cant find Client ID");
                 exit;
@@ -42,7 +44,7 @@ class GoogleapiController extends AbstractActionController {
                 $current_website_id = $value->id;
                 break;
             }
-            
+//             print_r("hello");exit;
             //check if current websute id session is avilable
             if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
                 $current_website_id = $session->offsetGet('current_website_id');
@@ -73,11 +75,19 @@ class GoogleapiController extends AbstractActionController {
 
     public function getGoogleApi() {
         if ($user = $this->identity()) {
+//            print_r("helasdaslo");exit;
+//                                    error_reporting(E_ALL);
+//            ini_set('display_errors', '1');
             $session = new Container('googleapi');
             $from = $session->offsetGet('from');
             $till = $session->offsetGet('till');
             $website_id = $session->offsetGet('current_website_id');
-
+            $id = $session->offsetGet('id');
+//            print_r($id);exit;
+            $tableGatewayWebsite = $this->getConnectionWebsite();
+            $websiteTable = new WebsiteTable($tableGatewayWebsite);
+            $profile_id=$websiteTable->getWebsite($id);
+//             print_r($profile_id->profile_id);exit;
             $ga = new gapi('seolawyers2012@gmail.com ', '9382devilx');
             /* We are using the 'source' dimension and the 'visits' metrics */
             $dimensions = array('landingPagePath');
@@ -85,7 +95,7 @@ class GoogleapiController extends AbstractActionController {
 
             $metrics = array('pageviews');
 
-            $ga->requestReportData('66890150', $dimensions, $metrics, '-pageviews', '', $from, $till, 1, 10);
+            $ga->requestReportData($profile_id->profile_id, $dimensions, $metrics, '-pageviews', '', $from, $till, 1, 10);
 
             $gaResults = $ga->getResults();
 
@@ -121,6 +131,7 @@ class GoogleapiController extends AbstractActionController {
         if ($user = $this->identity()) {
             $daterange = $_GET['daterange'];
             $website_id = $_GET['websiteid'];
+            $id = $_GET['id'];
 
             $ranges = explode('-', $daterange);
             $all_ranges = array();
@@ -134,6 +145,7 @@ class GoogleapiController extends AbstractActionController {
 //            print_r($all_ranges);exit;
             $session = new Container('googleapi');
             $session->offsetSet('current_website_id', $website_id);
+            $session->offsetSet('id', $id);
             $session->offsetSet('from', $all_ranges[0]);
             $session->offsetSet('till', $all_ranges[1]);
             $session->offsetSet('daterange', $daterange);

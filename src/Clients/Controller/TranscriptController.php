@@ -533,7 +533,7 @@ class TranscriptController extends AbstractActionController {
                 $parts = explode(' ', $range);
                 $month = date("m", strtotime($parts[0]));
                 $day = rtrim($parts[1], ',');
-                $all_ranges[] = $parts[2] . '-' . $month . '-' . $day;
+                $all_ranges[] = $parts[2] . '-' . $month . '-' . sprintf("%02s", $day);
             }
             $session = new Container('transcript');
             $session->offsetSet('current_website_id', $website_id);

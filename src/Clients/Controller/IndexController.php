@@ -99,7 +99,7 @@ class IndexController extends AbstractActionController {
                 $this->insertWebsiteAction($post->website, $id, $websiteTable);
 
                 $session = new Container('link');
-                $session->offsetSet('delete_user_msg', "User has been Created");
+                $session->offsetSet('delete_user_msg', "Client has been Created");
                 return $this->redirect()->toRoute(NULL, array(
                             'controller' => 'index',
                             'action' => 'list'
@@ -171,7 +171,7 @@ class IndexController extends AbstractActionController {
 
 
                 $session = new Container('link');
-                $session->offsetSet('delete_user_msg', "User has been Updated");
+                $session->offsetSet('delete_user_msg', "Client has been Updated");
                 return $this->redirect()->toRoute(NULL, array(
                             'controller' => 'index',
                             'action' => 'list'
@@ -228,7 +228,7 @@ class IndexController extends AbstractActionController {
     public function setmessageAction() {
         if ($user = $this->identity()) {
             $session = new Container('link');
-            $session->offsetSet('delete_user_msg', "User has been Deleted");
+            $session->offsetSet('delete_user_msg', "Client has been Deleted");
 
             return $this->redirect()->toRoute(NULL, array(
                         'controller' => 'index',
