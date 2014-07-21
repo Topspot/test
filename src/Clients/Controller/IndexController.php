@@ -26,6 +26,8 @@ use Clients\Model\ClientTable;
 use Clients\Model\Website;
 use Clients\Model\WebsiteTable;
 use Zend\Session\Container;
+use Clients\Model\UserRightTable;
+use Clients\Model\UserRight;
 
 class IndexController extends AbstractActionController {
 
@@ -39,23 +41,37 @@ class IndexController extends AbstractActionController {
 
     public function listAction() {
         if ($user = $this->identity()) {
+            
+             //get current user data
+            $auth = new AuthenticationService();
+            $user_data=$auth->getIdentity();
+            
             $session = new Container('link');
             $delete_msg = $session->offsetGet('delete_user_msg');
             $tableGateway = $this->getConnection();
             $clientTable = new ClientTable($tableGateway);
             $tableGatewayWebsite = $this->getConnectionWebsite();
+            
             $websiteTable = new WebsiteTable($tableGatewayWebsite);
-
+            $tableGatewayUserRights = $this->getConnectionUserRights();             
+            $UserRight = new UserRightTable($tableGatewayUserRights);
+             if ($auth->getIdentity()->roles_id == 2) {
+                  $applying_user_rights=$UserRight->getUserRightUser($user_data->usr_id);
+             }else{
+                  $applying_user_rights='';
+             }
             if (isset($delete_msg) && $delete_msg != '') {
                 $viewModel = new ViewModel(array(
                     'clients' => $clientTable->fetchAll(),
                     'websites' => $websiteTable->fetchAll(),
-                    'message' => $delete_msg
+                    'message' => $delete_msg,
+                    'applying_user_rights' => $applying_user_rights
                 ));
             } else {
                 $viewModel = new ViewModel(array(
                     'clients' => $clientTable->fetchAll(),
-                    'websites' => $websiteTable->fetchAll()
+                    'websites' => $websiteTable->fetchAll(),
+                    'applying_user_rights' => $applying_user_rights
                 ));
             }
 
@@ -240,6 +256,16 @@ class IndexController extends AbstractActionController {
         $resultSetPrototype->setArrayObjectPrototype(new
                 \Clients\Model\Website);
         $tableGateway = new \Zend\Db\TableGateway\TableGateway('websites', $dbAdapter, null, $resultSetPrototype);
+        return $tableGateway;
+    }
+    
+        public function getConnectionUserRights() {        // set connection to User Rights table
+        $sm = $this->getServiceLocator();
+        $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+        $resultSetPrototype = new \Zend\Db\ResultSet\ResultSet();
+        $resultSetPrototype->setArrayObjectPrototype(new
+                \Clients\Model\UserRight);
+        $tableGateway = new \Zend\Db\TableGateway\TableGateway('user_rights', $dbAdapter, null, $resultSetPrototype);
         return $tableGateway;
     }
 
