@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -10,82 +11,149 @@
 namespace Clients\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
-use Zend\Authentication\Result;
+use Zend\View\Model\ViewModel;
 use Zend\Authentication\AuthenticationService;
-use Zend\Authentication\Storage\Session as SessionStorage;
-use Zend\Db\Adapter\Adapter as DbAdapter;
-use Zend\Authentication\Adapter\DbTable as AuthAdapter;
+use Clients\Model\Website;
+use Clients\Model\WebsiteTable;
+use Zend\Session\Container;
 use gapi;
 
-/* Set your Google Analytics credentials */
-
-//define('ga_account'     ,'seolawyers2012@gmail.com');
-//define('ga_password'    ,'9382devilx');
-//define('ga_profile_id'  ,'');
-
 class GoogleapiController extends AbstractActionController {
-    /* Set your Google Analytics credentials */
 
     public function indexAction() {
-//        $ga = new gapi('lisapelosi1@gmail.com', 'Topspot@123');
-        $ga = new gapi('seolawyers2012@gmail.com ', '9382devilx');
-        /* We are using the 'source' dimension and the 'visits' metrics */
-//        $dimensions = array('landingPagePath');
-        $dimensions = array('channelGrouping');
+        if ($user = $this->identity()) {
+            $id = (int) $this->params()->fromRoute('id', 0);
+            $session = new Container('googleapi');
+//            $session->getManager()->getStorage()->clear();
+            $session->offsetSet('googleapi_client_id', $id);
 
-//        $metrics = array('pageviews');
-        $metrics = array('sessions');
-        $filter = 'channelGrouping == Organic Search';
-//        $fromDate = date('Y-m-d', strtotime('-2 days'));
-//        $toDate = date('Y-m-d');
-        /* We will sort the result be desending order of visits, 
-          and hence the '-' sign before the 'visits' string */
-//        $ga->requestReportData('76725909', $dimensions, $metrics, '-visits');
-        $ga->requestReportData('66890150', $dimensions, $metrics, '-sessions',$filter,'2014-06-16','2014-07-16',1,10);
+            if ($id == 0) {
+                print_r("Cant find Client ID");
+                exit;
+            }
+            //connection with website table
+            $tableGatewayWebsite = $this->getConnectionWebsite();
+            $websiteTable = new WebsiteTable($tableGatewayWebsite);
+            //get all client website id
+            $client_websites = $websiteTable->getWebsiteClients($id);
 
-        $gaResults = $ga->getResults();
+            //get clinet current website id
+            foreach ($client_websites as $value) {
+                $current_website_id = $value->id;
+                break;
+            }
+            error_reporting(E_ALL);
+ini_set('display_errors', '1');
+            
+            //check if current websute id session is avilable
+            if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
+                $current_website_id = $session->offsetGet('current_website_id');
+                //if date range is selected
+                if ($session->offsetExists('from') && $session->offsetGet('from') != '') {
+//                    echo "google api function";exit;
+                    $current_website_link=array();
+                    $current_website_link = $this->getGoogleApi();
+                }
+                $viewModel = new ViewModel(array(
+                    'client_websites' => $client_websites,
+                    'current_website_id' => $current_website_id,
+                    'website_data' => $current_website_link,
+                ));
+               
+            } else {
 
-        $i = 1;
-        ?>
-        <table>
-            <tr>
-
-                
-                <th>Paths</th>
-                <th>Pageviews</th>
-<!--                <th>Visits</th>
-                <th>source</th>
-                <th>region</th>-->
-            </tr>
-
-
-            <?php
-            foreach ($gaResults as $result) {
-                ?>
-                <tr>
-                  <td><?php echo $result ?></td>
-                    <td><?php echo $result->getSessions() ?></td>
-                    <!--<td><?php// echo $result->getLandingpagepath() ?></td>-->
-                     <!--<td><?php //echo $result->getVisits() ?></td>-->
-<!--                    <td><?php //echo $result->getVisitors() ?></td>
-                   
-                    <td><?php //echo $result->getSource() ?></td>
-                    <td><?php //echo $result->getRegion() ?></td>-->
-                </tr>
-            <?php
-//                     echo '<strong>'.$result.'</strong><br />';
-//  echo 'Source: ' . $result->getSource() . ' ';
-//  echo 'Visits: ' . $result->getVisits() . '<br />';
-//  echo 'Region: ' . $result->getRegion() . '<br />';
-//  echo 'Page Views: ' . $result->UniquePageviews() . '<br />';
-//            printf("%-4d %-40s %5d\n", $i++, $result->getSource(), $result->getVisits());
+                $viewModel = new ViewModel(array(
+                    'client_websites' => $client_websites,
+                    'current_website_id' => $current_website_id,                    
+                ));
+            }
+            return $viewModel;
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
-        ?>
-        </table>
-        <?php
-//        echo "Total Results : {$ga->getTotalResults()}";
-//        echo '<p>Total Source: ' . $ga->getSource() . ' total visits: ' . $ga->getVisits() . '</p>';
-        exit;
+    }
+
+    public function getGoogleApi() {
+        if ($user = $this->identity()) {
+            $session = new Container('googleapi');
+            $from = $session->offsetGet('from');
+            $till = $session->offsetGet('till');
+            $website_id = $session->offsetGet('current_website_id');
+
+            $ga = new gapi('seolawyers2012@gmail.com ', '9382devilx');
+            /* We are using the 'source' dimension and the 'visits' metrics */
+            $dimensions = array('landingPagePath');
+
+
+            $metrics = array('pageviews');
+
+            $ga->requestReportData('66890150', $dimensions, $metrics, '-pageviews', '', $from, $till, 1, 10);
+
+            $gaResults = $ga->getResults();
+
+            $i = 0;
+            $google_api_data = array();
+
+            foreach ($gaResults as $result) {
+                $google_api_data[$i]['path'] = $result;
+                $google_api_data[$i]['pageviews'] = $result->getPageviews();
+               
+                 $i=$i+1;
+
+            }
+
+            $dimensions = array('channelGrouping');
+            $metrics = array('sessions');
+            $filter = 'channelGrouping == Organic Search';
+            $ga->requestReportData('66890150', $dimensions, $metrics, '', $filter, $from, $till, 1, 10);
+            $gaResults = $ga->getResults();
+
+            $i = 0;
+            foreach ($gaResults as $result) {
+                $google_api_data['organic']=$result->getSessions();
+                
+            }  
+            return $google_api_data;
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
+    }
+
+    public function daterangeAction() {      // finding daterange data from database
+        if ($user = $this->identity()) {
+            $daterange = $_GET['daterange'];
+            $website_id = $_GET['websiteid'];
+
+            $ranges = explode('-', $daterange);
+            $all_ranges = array();
+            foreach ($ranges as $range) {
+                $range = trim($range);
+                $parts = explode(' ', $range);
+                $month = date("m", strtotime($parts[0]));
+                $day = rtrim($parts[1], ',');
+                $all_ranges[] = $parts[2] . '-' . $month . '-' . sprintf("%02s", $day);
+            }
+//            print_r($all_ranges);exit;
+            $session = new Container('googleapi');
+            $session->offsetSet('current_website_id', $website_id);
+            $session->offsetSet('from', $all_ranges[0]);
+            $session->offsetSet('till', $all_ranges[1]);
+            $session->offsetSet('daterange', $daterange);
+            $link_client_id = $session->offsetGet('googleapi_client_id');
+            return $this->redirect()->toUrl('/googleapi/index/' . $link_client_id);
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
+    }
+
+    public function getConnectionWebsite() {        // set connection to Website table
+        $sm = $this->getServiceLocator();
+        $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+        $resultSetPrototype = new \Zend\Db\ResultSet\ResultSet();
+        $resultSetPrototype->setArrayObjectPrototype(new
+                \Clients\Model\Website);
+        $tableGateway = new \Zend\Db\TableGateway\TableGateway('websites', $dbAdapter, null, $resultSetPrototype);
+        return $tableGateway;
     }
 
 }
