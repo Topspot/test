@@ -39,8 +39,8 @@ class TranscriptController extends AbstractActionController {
             $session->offsetSet('transcript_client_id', $id);
             //get current user data
             $auth = new AuthenticationService();
-            $user_data=$auth->getIdentity();
-            
+            $user_data = $auth->getIdentity();
+
             if (!$id) {
                 return $this->redirect()->toRoute(NULL, array(
                             'controller' => 'index',
@@ -52,15 +52,15 @@ class TranscriptController extends AbstractActionController {
 
             $tableGateway = $this->getConnection();
             $transcriptTable = new TranscriptTable($tableGateway);
-           
+
             $tableGatewayUserRights = $this->getConnectionUserRights();
             $UserRight = new UserRightTable($tableGatewayUserRights);
 //                        error_reporting(E_ALL);
 //            ini_set('display_errors', '1');
             if ($auth->getIdentity()->roles_id == 2) {
-            $applying_user_rights=$UserRight->getUserRightUser($user_data->usr_id);
-            }else{
-                $applying_user_rights='';
+                $applying_user_rights = $UserRight->getUserRightUser($user_data->usr_id);
+            } else {
+                $applying_user_rights = '';
             }
             if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
                 $current_website_id = $session->offsetGet('current_website_id');
@@ -115,67 +115,68 @@ class TranscriptController extends AbstractActionController {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
     }
-    
-     public function exportdataAction() {
-          if ($user = $this->identity()) {
-        $num = (int) $this->params()->fromRoute('id', 0);
-       
-         $session = new Container('transcript');
+
+    public function exportdataAction() {
+        if ($user = $this->identity()) {
+            $num = (int) $this->params()->fromRoute('id', 0);
+
+            $session = new Container('transcript');
 //                    ini_set("display_errors", "1");
 //            error_reporting(E_ALL & ~E_NOTICE);
 // Create new PHPExcel object
-        $objPHPExcel = new PHPExcel();
+            $objPHPExcel = new PHPExcel();
 // Set document properties
-        $objPHPExcel->getProperties()->setCreator("Speak Easy Marketing Inc")
-                ->setLastModifiedBy("Maarten Balliauw")
-                ->setTitle("Office 2007 XLSX Test Document")
-                ->setSubject("Office 2007 XLSX Test Document")
-                ->setDescription("Test document for Office 2007 XLSX, generated using PHP classes.")
-                ->setKeywords("office 2007 openxml php")
-                ->setCategory("Test result file");
+            $objPHPExcel->getProperties()->setCreator("Speak Easy Marketing Inc")
+                    ->setLastModifiedBy("Maarten Balliauw")
+                    ->setTitle("Office 2007 XLSX Test Document")
+                    ->setSubject("Office 2007 XLSX Test Document")
+                    ->setDescription("Test document for Office 2007 XLSX, generated using PHP classes.")
+                    ->setKeywords("office 2007 openxml php")
+                    ->setCategory("Test result file");
 // Add some data
-        $objPHPExcel->setActiveSheetIndex(0)
-                ->setCellValue('A1', 'Name')
-                ->setCellValue('B1', 'Date Recevied')
-                ->setCellValue('C1', 'Date Posted')
-                ->setCellValue('D1', 'Date Revised');
-
-        $objPHPExcel->getActiveSheet()->getStyle('A1:D1')->getFont()->setBold(true);
-        for ($i = 0; $i <= $num; $i++) {
-            $data = $session->offsetGet('leadobject' . $i);
-            $cell = $i + 2;
             $objPHPExcel->setActiveSheetIndex(0)
-                    ->setCellValue('A' . $cell, $data->name)
-                    ->setCellValue('B' . $cell, $data->date_posted)
-                    ->setCellValue('C' . $cell, $data->date_received)
-                    ->setCellValue('D' . $cell, $data->date_revised);
-        }
+                    ->setCellValue('A1', 'Name')
+                    ->setCellValue('B1', 'Date Recevied')
+                    ->setCellValue('C1', 'Date Posted')
+                    ->setCellValue('D1', 'Date Revised');
+
+            $objPHPExcel->getActiveSheet()->getStyle('A1:D1')->getFont()->setBold(true);
+            for ($i = 0; $i <= $num; $i++) {
+                $data = $session->offsetGet('leadobject' . $i);
+                $cell = $i + 2;
+                $objPHPExcel->setActiveSheetIndex(0)
+                        ->setCellValue('A' . $cell, $data->name)
+                        ->setCellValue('B' . $cell, $data->date_posted)
+                        ->setCellValue('C' . $cell, $data->date_received)
+                        ->setCellValue('D' . $cell, $data->date_revised);
+            }
 // Rename worksheet
-        $objPHPExcel->getActiveSheet()->setTitle('Transcripts');
+            $objPHPExcel->getActiveSheet()->setTitle('Transcripts');
 
 // Set active sheet index to the first sheet, so Excel opens this as the first sheet
-        $objPHPExcel->setActiveSheetIndex(0);
-        
+            $objPHPExcel->setActiveSheetIndex(0);
+
 // Redirect output to a clientâ€™s web browser (Excel2007)
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="transcripts.xlsx"');
-        header('Cache-Control: max-age=0');
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment;filename="transcripts.xlsx"');
+            header('Cache-Control: max-age=0');
 // If you're serving to IE 9, then the following may be needed
-        header('Cache-Control: max-age=1');
+            header('Cache-Control: max-age=1');
 
 // If you're serving to IE over SSL, then the following may be needed
-        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always modified
-        header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
-        header('Pragma: public'); // HTTP/1.0
+            header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+            header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always modified
+            header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+            header('Pragma: public'); // HTTP/1.0
 
-        $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        $objWriter->save('php://output');
-        exit;
-         } else {
+            $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+            $objWriter->save('php://output');
+            exit;
+        } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
     }
+
     public function addAction() {
         if ($user = $this->identity()) {
             $id = (int) $this->params()->fromRoute('id', 0);
@@ -194,18 +195,16 @@ class TranscriptController extends AbstractActionController {
             if ($this->request->isPost()) {
 
                 $post = $this->request->getPost();
-
-                $uploadFile = $this->params()->fromFiles('fileupload');
-//            $ufiles = json_encode($this->request->getFiles()->toArray());
-                $post = array_merge_recursive(
-                        $this->request->getPost()->toArray(),
-//                                $this->request->getFiles()->toArray()                    
-                        array('fileupload' => $uploadFile['name'])
-                );
                 $adapter = new \Zend\File\Transfer\Adapter\Http();
-                $uploadPath = getcwd() . '\module\Clients\data\uploads\\' . $id;
+                $uploadFile = $this->params()->fromFiles('fileupload');
+                $post = array_merge_recursive(
+                        $this->request->getPost()->toArray(), array('fileupload' => $uploadFile['name'])
+                );
+
+                $uploadPath = getcwd() . '/module/Clients/data/uploads//' . $id;
+                print_r($uploadPath);
                 if (!file_exists($uploadPath)) {
-                    mkdir($uploadPath, 0777, true);
+                    mkdir($uploadPath, 0777, true);//                    
                 }
                 $adapter->setDestination($uploadPath);
                 if ($adapter->receive($uploadFile['name'])) {
@@ -292,10 +291,10 @@ class TranscriptController extends AbstractActionController {
                     $transcriptTable->saveTranscript($transcript);    // updating the data
                     return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id);
                 } else {
-                    $filename = getcwd() . '\module\Clients\data\uploads\\' . $transcript->website_id . '\\' . $file_name;
+                    $filename = getcwd() . '/module/Clients/data/uploads//' . $transcript->website_id . '//' . $file_name;
                     unlink($filename);        // delete the old uploaded files
                     // upload new file
-                    $uploadPath = getcwd() . '\module\Clients\data\uploads\\' . $transcript->website_id;
+                    $uploadPath = getcwd() . '/module/Clients/data/uploads//' . $transcript->website_id;
 
                     $post = array_merge_recursive(
                             $this->request->getPost()->toArray(), array('fileupload' => $uploadFile['name'])
@@ -348,7 +347,6 @@ class TranscriptController extends AbstractActionController {
         $current_website_id = $_POST['current_website'];
 //            print_r($_POST['current_website']);exit;
         $id = (int) $this->params()->fromRoute('id', 0);
-//                    Debug::dump($id);exit;
         if (!$id) {
             return $this->redirect()->toRoute(NULL, array(
                         'controller' => 'index',
@@ -359,20 +357,17 @@ class TranscriptController extends AbstractActionController {
         $tableGateway = $this->getConnection();
         $transcriptTable = new TranscriptTable($tableGateway);
         $data = $transcriptTable->getTranscript($id);
-
-        $filename = getcwd() . '\module\Clients\data\uploads\\' . $current_website_id . '\\' . $data->fileupload;
+         ini_set("display_errors", "1");
+         error_reporting(E_ALL & ~E_NOTICE);
+        $filename = getcwd() . '/module/Clients/data/uploads//' . $current_website_id . '//' . $data->fileupload;
 //        print_r($filename);exit;
         unlink($filename);        // delete the old uploaded files
         $transcriptTable->deleteTranscript($id);
-
-
         echo json_encode(array('data' => ''));
         exit();
     }
 
     public function downloadallAction() {
-//       header('Content-Type: application/json');
-//       print($_POST['downloadids']);exit;
         if ($user = $this->identity()) {
             $download_ids = $_POST['downloadids'];
             $current_website_id = (int) $this->params()->fromRoute('id', 0);
@@ -383,24 +378,26 @@ class TranscriptController extends AbstractActionController {
             $tableGateway = $this->getConnection();
             $transcriptTable = new TranscriptTable($tableGateway);
 
-            if (!file_exists(getcwd() . '\module\Clients\data\uploads\temp\\' . $current_website_id)) {
-                mkdir(getcwd() . '\module\Clients\data\uploads\temp\\', 0777, true);
+            if (!file_exists(getcwd() . '/module/Clients/data/uploads/temp')) {
+                mkdir(getcwd() . '/module/Clients/data/uploads/temp', 0777, true);
             }
             if (!empty($download_ids)) {
                 $download_ids = explode(",", $download_ids);
                 foreach ($download_ids as $ids) {
                     $single_data = $transcriptTable->getTranscript($ids);
 
-                    $filename = getcwd() . '\module\Clients\data\uploads\\' . $current_website_id . '\\' . $single_data->fileupload;
-                    $filename1 = getcwd() . '\module\Clients\data\uploads\temp\\' . $single_data->fileupload;
+                    $filename = getcwd() . '/module/Clients/data/uploads//' . $current_website_id . '//' . $single_data->fileupload;
+                    $filename1 = getcwd() . '/module/Clients/data/uploads/temp//' . $single_data->fileupload;
                     copy($filename, $filename1);
                 }
             } else {
-                $data = $transcriptTable->getTranscriptWebsite($current_website_id);
 
+                $data = $transcriptTable->getTranscriptWebsite($current_website_id);
+               
                 foreach ($data as $value) {
-                    $filename = getcwd() . '\module\Clients\data\uploads\\' . $current_website_id . '\\' . $value['fileupload'];
-                    $filename1 = getcwd() . '\module\Clients\data\uploads\temp\\' . $value['fileupload'];
+                    
+                    $filename = getcwd() . '/module/Clients/data/uploads//' . $current_website_id . '//' . $value->fileupload;
+                    $filename1 = getcwd() . '/module/Clients/data/uploads/temp//' . $value->fileupload;
                     copy($filename, $filename1);
                 }
             }
@@ -410,15 +407,15 @@ class TranscriptController extends AbstractActionController {
                     'archive' => 'transcript.zip'
                 ),
             ));
-            $compressed = $filter->filter(getcwd() . '\module\Clients\data\uploads\temp');
+            $compressed = $filter->filter(getcwd() . '/module/Clients/data/uploads/temp');
 
-            $files = glob(getcwd() . '\module\Clients\data\uploads\temp\*'); // get all file names
+            $files = glob(getcwd() . '/module/Clients/data/uploads/temp/*'); // get all file names
             foreach ($files as $file) { // iterate files
                 if (is_file($file))
                     unlink($file); // delete file
             }
-            if (is_dir(getcwd() . '\module\Clients\data\uploads\temp')) {
-                if (!rmdir(getcwd() . '\module\Clients\data\uploads\temp')) { {
+            if (is_dir(getcwd() . '/module/Clients/data/uploads/temp')) {
+                if (!rmdir(getcwd() . '/module/Clients/data/uploads/temp')) { {
                         echo ("Could not remove");
                         exit;
                     }
@@ -459,7 +456,7 @@ class TranscriptController extends AbstractActionController {
             $tableGateway = $this->getConnection();
             $transcriptTable = new TranscriptTable($tableGateway);
             $data = $transcriptTable->getTranscript($id);
-            $filename = getcwd() . '\module\Clients\data\uploads\\' . $current_website_id . '\\' . $data->fileupload;
+            $filename = getcwd() . '/module/Clients/data/uploads//' . $current_website_id . '//' . $data->fileupload;
             if (file_exists($filename)) {
                 header('Content-Description: File Transfer');
                 header('Content-Type: application/octet-stream');
@@ -510,8 +507,6 @@ class TranscriptController extends AbstractActionController {
             $website_id = $session->offsetGet('current_website_id');
             $from = $from . ' 00:00:00';
             $till = $till . ' 23:59:59';
-//       print_r($from);
-//       print_r($till);exit;
             $tableGateway = $this->getConnection();
             $transcriptTable = new TranscriptTable($tableGateway);
             $website_transcripts_data = $transcriptTable->dateRange($from, $till, $website_id);
@@ -580,7 +575,8 @@ class TranscriptController extends AbstractActionController {
         $tableGateway = new \Zend\Db\TableGateway\TableGateway('websites', $dbAdapter, null, $resultSetPrototype);
         return $tableGateway;
     }
-        public function getConnectionUserRights() {        // set connection to User Rights table
+
+    public function getConnectionUserRights() {        // set connection to User Rights table
         $sm = $this->getServiceLocator();
         $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
         $resultSetPrototype = new \Zend\Db\ResultSet\ResultSet();

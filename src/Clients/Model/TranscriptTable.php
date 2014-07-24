@@ -90,10 +90,10 @@ class TranscriptTable {
         $where = new Where();
         $where->equalTo('website_id', $website_id);
         $where->between('created_at', $from, $till);
-        $resultSet = $this->tableGateway->select($where)->toArray();
+        $resultSet = $this->tableGateway->select($where);
 //        print_r($resultSet);
 //        exit;
-//        $resultSet->buffer();
+        $resultSet->buffer();
         return $resultSet;
     }
 

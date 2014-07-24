@@ -10,7 +10,7 @@ $auth = new AuthenticationService();
 <div class="row">
     <div class="col-xs-12"> 
         <?php
-//         print_r($applying_user_rights->crud_link);exit;
+        $rowCount = count($website_data);
         if (isset($message) && $message != '') {
             if ($message == "Link has been successfully Deleted.") {
                 ?>
@@ -48,32 +48,7 @@ $auth = new AuthenticationService();
                     <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
                     <span></span> <b class="caret"></b>
                 </div>
-            </div>
-
-        </div>    
-        <div class="table-header" style="min-height: 42px;">
-            <?php if ($auth->getIdentity()->roles_id == 3) {
-                ?>
-
-                <?php
-            } else if ($auth->getIdentity()->roles_id == 2) {
-                if ($applying_user_rights->crud_link == 1) {
-                    ?>
-                    <a href="/link/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Link</a>
-                    <a href="#" class="btn btn-danger pull-right multiple-delete" data-id="link">Delete Selected Links</a>
-                <?php
-                } else {
-                    
-                }
-            } else {
-                ?>   
-                <a href="/link/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Link</a>
-                <a href="#" class="btn btn-danger pull-right multiple-delete" data-id="link">Delete Selected Links</a>
-                <?php
-            }
-            ?>
-
-            <div class="pull-right">
+                            <div class="pull-left">
 
                 <select class="form-control" id="form-field-select-1" data-id="link" style="width: 300px; margin-right: 15px; margin-top: 5px;">
                     <?php if (isset($current_website_id) && $current_website_id != '') { ?>
@@ -105,18 +80,76 @@ $auth = new AuthenticationService();
                 </select>
 
             </div>
-            <?php
-            $num = 0;
-            foreach ($website_data as $transcriptt) {
-                $session->offsetSet('leadobject' . $num, $transcriptt);
-                $num = $num + 1;
+                <?php if ($auth->getIdentity()->roles_id == 3) {
+                ?>
+
+                <?php
+            } else if ($auth->getIdentity()->roles_id == 2) {
+                if ($applying_user_rights->crud_link == 1) {
+                    ?>
+                 <div class="pull-left" style="margin-left: 15px">
+                    <a href="/link/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Link</a>
+                </div>   
+                <div class="pull-left" style="margin-left: 15px">
+                     <?php if($rowCount > 0){
+                         ?>
+                    <a href="#" class="btn btn-danger pull-right multiple-delete" data-id="link">Delete Selected Links</a>
+                     <?php } ?>
+                </div>   
+                <div class="pull-left" style="margin-left: 15px">
+                    <?php
+                        $num = 0;
+                        foreach ($website_data as $transcriptt) {
+                            $session->offsetSet('leadobject' . $num, $transcriptt);
+                            $num = $num + 1;
+                        }
+                       if($rowCount > 0){
+                         ?>
+                    <a href="/link/exportdata/<?php echo $num - 1; ?>" class="btn btn-grey pull-right" data-id="link" style="margin-right: 10px;">Export</a>
+                       <?php } ?>
+                </div> 
+                <?php
+                } else {
+                    
+                }
+            } else {
+                ?>   
+                <div class="pull-left" style="margin-left: 15px">
+                    <a href="/link/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Link</a>
+                </div>   
+                <div class="pull-left" style="margin-left: 15px">
+                     <?php if($rowCount > 0){
+                         ?>
+                    <a href="#" class="btn btn-danger pull-right multiple-delete" data-id="link">Delete Selected Links</a>
+                     <?php } ?>
+                </div>   
+                <div class="pull-left" style="margin-left: 15px">
+                    <?php
+                        $num = 0;
+                        foreach ($website_data as $transcriptt) {
+                            $session->offsetSet('leadobject' . $num, $transcriptt);
+                            $num = $num + 1;
+                        }
+                       if($rowCount > 0){
+                         ?>
+                    <a href="/link/exportdata/<?php echo $num - 1; ?>" class="btn btn-grey pull-right" data-id="link" style="margin-right: 10px;">Export</a>
+                       <?php } ?>
+                </div> 
+                <?php
             }
             ?>
+  
+            </div>
 
-            <a href="/link/exportdata/<?php echo $num - 1; ?>" class="btn btn-grey pull-right" data-id="link" style="margin-right: 10px;">Export</a>
+        </div>    
+        <?php 
+       if ($rowCount > 0) { ?>
+        <div class="table-header" style="min-height: 42px;">       
 
+
+           
         </div>
-       <?php if (isset($website_data) && !empty($website_data)) { ?>
+       
         <div class="table-responsive">
             <table id="sample-table-2" class="table table-striped table-bordered table-hover">
                 <thead>
@@ -258,11 +291,13 @@ $auth = new AuthenticationService();
                         }
                         ?>
                         </tr>
-<?php } ?>              
+                <?php } ?>              
                 </tbody>
             </table>
         </div>
-        <?php } ?> 
+        <?php }else{
+            echo "NO RESULT FOUND";
+        } ?> 
     </div>
 </div>
 <div id="modal-table" class="modal fade" tabindex="-1">

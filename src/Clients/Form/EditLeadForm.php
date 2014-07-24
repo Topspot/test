@@ -28,15 +28,15 @@ class EditLeadForm extends Form {
             'options' => array(
                 'label' => 'Type',
                 'value_options' => array(
-                    '' => 'Select',
-                    '1' => 'POTEN NEWCLIENT',
-                    '2' => 'NON-CLIENT',
-                    '3' => 'SOLICITER',
-                    '4' => 'CURRENT CLIENT',
-                    '5' => 'REPEATED',
-                    '6' => 'WEB FORM',
-                    '7' => 'TEST CALL',
-                    '7' => 'NO. RECORDING'
+                     '' => 'Select',
+                    '1' => 'Poten Newclient',
+                    '2' => 'Non-Client',
+                    '3' => 'Soliciter',
+                    '4' => 'Current Client',
+                    '5' => 'Repeated',
+                    '6' => 'Web Form',
+                    '7' => 'Test Call',
+                    '8' => 'No Recording'
                 ),
             ),
             'attributes' => array(
@@ -65,9 +65,9 @@ class EditLeadForm extends Form {
                 'label' => 'Source',
                 'value_options' => array(
                     '' => 'Select',
-                    '1' => 'WEBSITE_NY',
-                    '2' => 'CONTACT FORM',
-                    '3' => 'BOOK DOWNLOAD'
+                    '1' => 'Phone Call',
+                    '2' => 'Contact Form',
+                    '3' => 'Book Download'
 
                 ),
             ),

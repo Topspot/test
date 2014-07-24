@@ -3,14 +3,17 @@
 use Zend\Session\Container;
 
 $session = new Container('lead');
-$daterange=$session->offsetGet('daterange');
-use Zend\Authentication\AuthenticationService;
-$auth = new AuthenticationService();
+$daterange = $session->offsetGet('daterange');
 
+use Zend\Authentication\AuthenticationService;
+
+$auth = new AuthenticationService();
 ?>
 <div class="row">
     <div class="col-xs-12"> 
         <?php
+        $rowCount = count($website_data);
+
 //         print_r($website_data);exit;
         if (isset($message) && $message != '') {
             if ($message == "Lead has been successfully Deleted.") {
@@ -21,10 +24,10 @@ $auth = new AuthenticationService();
                     </button>
 
                     <i class="icon-ok red"></i>
-                    <?php echo $message; ?>
+        <?php echo $message; ?>
 
                 </div>          
-            <?php } else { ?>
+    <?php } else { ?>
 
                 <div class="alert alert-block alert-success">
                     <button type="button" class="close" data-dismiss="alert">
@@ -32,86 +35,121 @@ $auth = new AuthenticationService();
                     </button>
 
                     <i class="icon-ok green"></i>
-                    <?php echo $message; ?>
+                <?php echo $message; ?>
                 </div> 
-            <?php
+                <?php
             }
         }
         ?>    
         <h3 class="header smaller lighter blue current-websiteid" data-id="">Leads</h3>
-        
+
         <div class="row ">
-           
+
             <div class="well" style="overflow: auto; margin: 0 12px 10px;">
 
-               <div id="reportrange" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
-                 <input class="form-control get-date-range hidden" name="date-range-picker" id="date-range-picker" type="text" data-date-format="dd-mm-yyyy" />
-                   <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
-                   <span></span> <b class="caret"></b>
-               </div>
-            </div>             
-        </div>    
-        <div class="table-header" style="min-height: 42px;">
-             <?php if ($auth->getIdentity()->roles_id == 3) {
-                ?>
+                <div id="reportrange" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
+                    <input class="form-control get-date-range hidden" name="date-range-picker" id="date-range-picker" type="text" data-date-format="dd-mm-yyyy" />
+                    <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
+                    <span></span> <b class="caret"></b>
+                </div>
+                <div class="pull-left">
 
-                <?php
-            } else if ($auth->getIdentity()->roles_id == 2) {
-                if ($applying_user_rights->crud_lead == 1) {
-                    ?>
-                     <!--<a href="/lead/add/<?php //echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Lead</a>-->
-            <a href="#" class="btn btn-danger pull-right multiple-delete" data-id="lead">Delete Selected Leads</a>
-                <?php
-                } else {
-                    
-                }
-            } else {
-                ?>   
-                 <!--<a href="/lead/add/<?php //echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Lead</a>-->
-            <a href="#" class="btn btn-danger pull-right multiple-delete" data-id="lead">Delete Selected Leads</a>
-                <?php
-            }
-            ?>
-            <div class="pull-right">
+                    <select class="form-control" id="form-field-select-1" data-id="lead" style="width: 300px; margin-right: 15px; margin-top: 5px;">
+                        <?php if (isset($current_website_id) && $current_website_id != '') { ?>
+                            <?php
+                            foreach ($client_websites as $website) {
+                                if ($current_website_id == $website->id) {
+                                    ?>
+                                    <option value="<?php echo $website->id ?>"><?php echo $website->website ?></option>
+                                <?php
+                                }
+                            }
+                            ?>
+                            <?php
+                            foreach ($client_websites as $website) {
+                                if ($current_website_id != $website->id) {
+                                    ?>                        
+                                    <option value="<?php echo $website->id ?>"><?php echo $website->website ?></option>
+                                <?php
+                                }
+                            }
+                            ?>
+                        <?php } else { ?>
 
-                <select class="form-control" id="form-field-select-1" data-id="lead" style="width: 300px; margin-right: 15px; margin-top: 5px;">
-                    <?php if (isset($current_website_id) && $current_website_id != '') { ?>
-                        <?php
-                        foreach ($client_websites as $website) {
-                            if ($current_website_id == $website->id) {
+                            <?php foreach ($client_websites as $website) {
                                 ?>
                                 <option value="<?php echo $website->id ?>"><?php echo $website->website ?></option>
-                            <?php }
-                        }
+                            <?php } ?>
+                        <?php }
                         ?>
-                        <?php
-                        foreach ($client_websites as $website) {
-                            if ($current_website_id != $website->id) {
-                                ?>                        
-                                <option value="<?php echo $website->id ?>"><?php echo $website->website ?></option>
-                            <?php }
-                        }
-                        ?>
-                    <?php } else { ?>
+                    </select>
 
-                        <?php foreach ($client_websites as $website) {
-                            ?>
-                            <option value="<?php echo $website->id ?>"><?php echo $website->website ?></option>
-                        <?php } ?>
-                    <?php }
+                </div> 
+                <?php if ($auth->getIdentity()->roles_id == 3) {
                     ?>
-                </select>
 
-            </div>
-            <?php 
-                $num=0;
-                        foreach ($website_data as $leadd) {                            
-                            $session->offsetSet('leadobject'.$num, $leadd);
-                            $num=$num+1;
-                        }    
-            ?>
+                    <?php
+                } else if ($auth->getIdentity()->roles_id == 2) {
+                    if ($applying_user_rights->crud_lead == 1) {
+                        ?>
+                                        <!--<div class="pull-left" style="margin-left: 15px">-->
+                                           <a href="/lead/add/<?php echo $current_website_id; ?>" id="addbuttonlink" ></a>
+                                        <!--</div>-->   
+                        <div class="pull-left" style="margin-left: 15px">
+                            <?php if ($rowCount > 0) {
+                                ?>
+                                <a href="#" class="btn btn-danger pull-right multiple-delete" data-id="lead">Delete Selected Leads</a>
+                            <?php } ?>
+                        </div>   
+                        <div class="pull-left" style="margin-left: 15px">
+                            <?php
+                            $num = 0;
+                            foreach ($website_data as $leadd) {
+                                $session->offsetSet('leadobject' . $num, $leadd);
+                                $num = $num + 1;
+                            }
+                            if ($rowCount > 0) {
+                                ?>
+                                <a href="/lead/exportdata/<?php echo $num - 1; ?>" class="btn btn-grey pull-right" data-id="transcript" style="margin-right: 10px;">Export</a>
+                        <?php } ?>
+                        </div> 
+                        <?php
+                    } else {
+                        
+                    }
+                } else {
+                    ?>
+                                         <a href="/lead/add/<?php echo $current_website_id; ?>" id="addbuttonlink" ></a>
+<!--                                    <div class="pull-left" style="margin-left: 15px">
+                       <a href="/lead/add/<?php //echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Lead</a>
+                    </div>   -->
+                    <div class="pull-left" style="margin-left: 15px">
+                        <?php if ($rowCount > 0) {
+                            ?>
+                            <a href="#" class="btn btn-danger pull-right multiple-delete" data-id="lead">Delete Selected Leads</a>
+                        <?php } ?>
+                    </div>   
+                    <div class="pull-left" style="margin-left: 15px">
+                        <?php
+                        $num = 0;
+                        foreach ($website_data as $leadd) {
+                            $session->offsetSet('leadobject' . $num, $leadd);
+                            $num = $num + 1;
+                        }
+                        if ($rowCount > 0) {
+                            ?>
+                            <a href="/lead/exportdata/<?php echo $num - 1; ?>" class="btn btn-grey pull-right" data-id="transcript" style="margin-right: 10px;">Export</a>
+                    <?php } ?>
+                    </div> 
+    <?php
+}
+?>  
 
-            <a href="/lead/exportdata/<?php echo $num-1; ?>" class="btn btn-grey pull-right" data-id="transcript" style="margin-right: 10px;">Export</a>
+            </div>             
+        </div>    
+         <?php if ($rowCount > 0) { ?>
+        <div class="table-header" style="min-height: 42px;">           
+
 
         </div>
 
@@ -132,23 +170,23 @@ $auth = new AuthenticationService();
                         <th>Call Duration</th>
                         <th>Leads Name</th>
                         <th>Leads email</th>
-                       
-                       <?php if ($auth->getIdentity()->roles_id == 3) {
-                             ?>   <th class="hidden"></th> <?php
-                        }else if($auth->getIdentity()->roles_id == 2) {
-                                if ($applying_user_rights->crud_lead == 1) {
-                                  ?>   
-                            <th>Actions</th>
-                            <?php  
-                                }else{
-                                   ?>   <th class="hidden"></th> <?php
-                                }
-                        }else {
-                            ?>   
-                            <th>Actions</th>
-                            <?php
+
+                        <?php if ($auth->getIdentity()->roles_id == 3) {
+                            ?>   <th class="hidden"></th> <?php
+                    } else if ($auth->getIdentity()->roles_id == 2) {
+                        if ($applying_user_rights->crud_lead == 1) {
+                                ?>   
+                                <th>Actions</th>
+                                    <?php
+                                } else {
+                                    ?>   <th class="hidden"></th> <?php
                         }
-                        ?>
+                    } else {
+                                ?>   
+                            <th>Actions</th>
+                    <?php
+                }
+                ?>
                     </tr>
                 </thead>
 
@@ -165,125 +203,113 @@ $auth = new AuthenticationService();
                                     <span class="lbl"></span>
                                 </label>
                             </td>
-                            <td><?php 
-                            if($lead->caller_type == 1){
-                                echo "Poten Newclient";
-                            }else if($lead->caller_type == 2){
-                                echo "Non-client";
-                            
-                            }else if($lead->caller_type == 3){
-                               echo "Soliciter";
-                            
-                            }else if($lead->caller_type == 4){
-                                echo "Current Client";
-                            
-                            }else if($lead->caller_type == 5){
-                                echo "Repeated";
-                            
-                            }else if($lead->caller_type == 6){
-                                 echo "Web Form";
-                            
-                            }else if($lead->caller_type == 7){
-                                echo "Test call";
-                            }else{
-                                echo "No Recording";
-                            }
-                            ?></td>
+                            <td><?php
+                                if ($lead->caller_type == 1) {
+                                    echo "Poten Newclient";
+                                } else if ($lead->caller_type == 2) {
+                                    echo "Non-Client";
+                                } else if ($lead->caller_type == 3) {
+                                    echo "Soliciter";
+                                } else if ($lead->caller_type == 4) {
+                                    echo "Current Client";
+                                } else if ($lead->caller_type == 5) {
+                                    echo "Repeated";
+                                } else if ($lead->caller_type == 6) {
+                                    echo "Web Form";
+                                } else if ($lead->caller_type == 7) {
+                                    echo "Test call";
+                                } else if ($lead->caller_type == 7) {
+                                    echo "No Recording";                                
+                                } else {
+                                    echo " ";
+                                }
+                                ?></td>
                             <td><?php echo $lead->lead_date; ?></td>
                             <td><?php
-                            if($lead->lead_source == 1){
-                                echo "Website-NY";
-                            }else if($lead->lead_source == 2){
+                            if ($lead->lead_source == 1) {
+                                echo "Phone Call";
+                            } else if ($lead->lead_source == 2) {
                                 echo "Contact Form";
-                            
-                            }else {
-                               echo "Book Download";
-                            
+                            } else {
+                                echo "Book Download";
                             }
-                            ?></td>
+                                ?></td>
                             <td><?php echo $lead->inc_phone; ?></td>
                             <td><?php echo $lead->call_duration; ?></td>
                             <td><?php echo $lead->lead_name; ?></td>
                             <td><?php echo $lead->lead_email; ?></td>
-                      
-                           <?php if ($auth->getIdentity()->roles_id == 3) {
-                                ?>  <td class="hidden"></td> <?php
-                            } else if($auth->getIdentity()->roles_id == 2) {
-                                if ($applying_user_rights->crud_lead == 1) {
-                                            ?>
+
+                        <?php if ($auth->getIdentity()->roles_id == 3) {
+                            ?>  <td class="hidden"></td> <?php
+                        } else if ($auth->getIdentity()->roles_id == 2) {
+                            if ($applying_user_rights->crud_lead == 1) {
+                                ?>
+                                    <td>
+                                        <div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
+                                            <a class="green" href="<?php echo $this->url('lead', array('action' => 'edit', 'id' => $lead->id)); ?>">
+                                                <i class="icon-pencil bigger-130"></i>
+                                            </a>
+                                            <!--<a href="<?php //echo $this->url('clients', array('action' => 'dialoge', 'id' => $client->id));    ?>" class="tooltip-error" data-rel="tooltip" title="Dialoge">-->
+                                            <a href="#" role="button" class="red" onclick="deleterow(<?php echo $lead->id; ?>, 'lead');"> 
+                                                <i class="icon-trash bigger-130"></i>
+                                            </a>
+                                        </div>
+                                    </td>    
+
+                                <?php } else {
+                                    ?>  <td class="hidden"></td> <?php
+                                }
+                            } else {
+                                ?>   
                                 <td>
                                     <div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
-                                    <a class="green" href="<?php echo $this->url('lead', array('action' => 'edit', 'id' => $lead->id)); ?>">
-                                        <i class="icon-pencil bigger-130"></i>
-                                    </a>
-                                    <!--<a href="<?php //echo $this->url('clients', array('action' => 'dialoge', 'id' => $client->id));   ?>" class="tooltip-error" data-rel="tooltip" title="Dialoge">-->
-                                    <a href="#" role="button" class="red" onclick="deleterow(<?php echo $lead->id; ?>,'lead');"> 
-                                        <i class="icon-trash bigger-130"></i>
-                                    </a>
-                                </div>
-                                </td>    
-                                
-                                <?php }else{
-                                           ?>  <td class="hidden"></td> <?php 
-                                        }
-                            }else{ ?>   
-                            <td>
-                                <div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
-                                    <a class="blue" href="#">
-                                        <i class="icon-zoom-in bigger-130"></i>
-                                    </a>
-
-                                    <a class="green" href="<?php echo $this->url('lead', array('action' => 'edit', 'id' => $lead->id)); ?>">
-                                        <i class="icon-pencil bigger-130"></i>
-                                    </a>
-                                    <!--<a href="<?php //echo $this->url('clients', array('action' => 'dialoge', 'id' => $client->id));   ?>" class="tooltip-error" data-rel="tooltip" title="Dialoge">-->
-                                    <a href="#" role="button" class="red" onclick="deleterow(<?php echo $lead->id; ?>,'lead');"> 
-                                        <i class="icon-trash bigger-130"></i>
-                                    </a>
-                                </div>
-
-                                <div class="visible-xs visible-sm hidden-md hidden-lg">
-                                    <div class="inline position-relative">
-                                        <button class="btn btn-minier btn-yellow dropdown-toggle" data-toggle="dropdown">
-                                            <i class="icon-caret-down icon-only bigger-120"></i>
-                                        </button>
-
-                                        <ul class="dropdown-menu dropdown-only-icon dropdown-yellow pull-right dropdown-caret dropdown-close">
-                                            <li>
-                                                <a href="#" class="tooltip-info" data-rel="tooltip" title="View">
-                                                    <span class="blue">
-                                                        <i class="icon-zoom-in bigger-120"></i>
-                                                    </span>
-                                                </a>
-                                            </li>
-
-                                            <li>
-                                                <a href="<?php echo $this->url('lead', array('action' => 'edit', 'id' => $lead->id)); ?>" class="tooltip-success" data-rel="tooltip" title="Edit">
-                                                    <span class="green">
-                                                        <i class="icon-edit bigger-120"></i>
-                                                    </span>
-                                                </a>
-                                            </li>
-
-                                            <li>
-                                                <a href="<?php echo $this->url('clients', array('action' => 'delete', 'id' => $client->id)); ?>" class="tooltip-error" data-rel="tooltip" title="Delete">
-                                                    <span class="red">
-                                                        <i class="icon-trash bigger-120"></i>
-                                                    </span>
-                                                </a>
-                                            </li>
-                                        </ul>
+                                        <a class="green" href="<?php echo $this->url('lead', array('action' => 'edit', 'id' => $lead->id)); ?>">
+                                            <i class="icon-pencil bigger-130"></i>
+                                        </a>
+                                        <!--<a href="<?php //echo $this->url('clients', array('action' => 'dialoge', 'id' => $client->id));    ?>" class="tooltip-error" data-rel="tooltip" title="Dialoge">-->
+                                        <a href="#" role="button" class="red" onclick="deleterow(<?php echo $lead->id; ?>, 'lead');"> 
+                                            <i class="icon-trash bigger-130"></i>
+                                        </a>
                                     </div>
-                                </div>
-                            </td>
-                           <?php
-                              } 
-                                ?>                               
+
+                                    <div class="visible-xs visible-sm hidden-md hidden-lg">
+                                        <div class="inline position-relative">
+                                            <button class="btn btn-minier btn-yellow dropdown-toggle" data-toggle="dropdown">
+                                                <i class="icon-caret-down icon-only bigger-120"></i>
+                                            </button>
+
+                                            <ul class="dropdown-menu dropdown-only-icon dropdown-yellow pull-right dropdown-caret dropdown-close">
+
+                                                <li>
+                                                    <a href="<?php echo $this->url('lead', array('action' => 'edit', 'id' => $lead->id)); ?>" class="tooltip-success" data-rel="tooltip" title="Edit">
+                                                        <span class="green">
+                                                            <i class="icon-edit bigger-120"></i>
+                                                        </span>
+                                                    </a>
+                                                </li>
+
+                                                <li>
+                                                    <a href="<?php echo $this->url('clients', array('action' => 'delete', 'id' => $client->id)); ?>" class="tooltip-error" data-rel="tooltip" title="Delete">
+                                                        <span class="red">
+                                                            <i class="icon-trash bigger-120"></i>
+                                                        </span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </td>
+                            <?php
+                        }
+                        ?>                               
                         </tr>
-                  <?php } ?>              
+                        <?php } ?>              
                 </tbody>
             </table>
         </div>
+        <?php }else{
+            echo "NO RESULT FOUND";
+        } ?> 
     </div>
 </div>
 <div id="modal-table" class="modal fade" tabindex="-1">

@@ -68,8 +68,7 @@ class LinkController extends AbstractActionController {
                 } else {
                     $current_website_link = $linkTable->getLinkWebsite($current_website_id);
                 }
-
-
+//                print_r();
                 if (!empty($current_website_link)) {
 
                     $viewModel = new ViewModel(array(
@@ -81,6 +80,7 @@ class LinkController extends AbstractActionController {
                             
                     ));
                 } else {
+                    
                     $viewModel = new ViewModel(array(
                         'client_websites' => $websiteTable->getWebsiteClients($id),
                         'message' => $session->offsetGet('msg'),

@@ -22,12 +22,12 @@ class GoogleapiController extends AbstractActionController {
 
     public function indexAction() {
         if ($user = $this->identity()) {
-            
+
             $id = (int) $this->params()->fromRoute('id', 0);
             $session = new Container('googleapi');
 //            $session->getManager()->getStorage()->clear();
             $session->offsetSet('googleapi_client_id', $id);
-                        error_reporting(E_ALL);
+            error_reporting(E_ALL);
             ini_set('display_errors', '1');
             if ($id == 0) {
                 print_r("Cant find Client ID");
@@ -44,27 +44,27 @@ class GoogleapiController extends AbstractActionController {
                 $current_website_id = $value->id;
                 break;
             }
-//             print_r("hello");exit;
             //check if current websute id session is avilable
             if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
                 $current_website_id = $session->offsetGet('current_website_id');
                 //if date range is selected
                 if ($session->offsetExists('from') && $session->offsetGet('from') != '') {
 //                    echo "google api function";exit;
-                    $current_website_link=array();
-                    $current_website_link = $this->getGoogleApi();
+                    $current_website_googleapi = array();
+                    $current_website_googleapi = $this->getGoogleApi();
+                } else {
+                    $current_website_googleapi = '';
                 }
                 $viewModel = new ViewModel(array(
                     'client_websites' => $client_websites,
                     'current_website_id' => $current_website_id,
-                    'website_data' => $current_website_link,
+                    'website_data' => $current_website_googleapi,
                 ));
-               
             } else {
 
                 $viewModel = new ViewModel(array(
                     'client_websites' => $client_websites,
-                    'current_website_id' => $current_website_id,                    
+                    'current_website_id' => $current_website_id,
                 ));
             }
             return $viewModel;
@@ -75,24 +75,20 @@ class GoogleapiController extends AbstractActionController {
 
     public function getGoogleApi() {
         if ($user = $this->identity()) {
-//            print_r("helasdaslo");exit;
-//                                    error_reporting(E_ALL);
+//             error_reporting(E_ALL);
 //            ini_set('display_errors', '1');
             $session = new Container('googleapi');
             $from = $session->offsetGet('from');
             $till = $session->offsetGet('till');
             $website_id = $session->offsetGet('current_website_id');
             $id = $session->offsetGet('id');
-//            print_r($id);exit;
             $tableGatewayWebsite = $this->getConnectionWebsite();
             $websiteTable = new WebsiteTable($tableGatewayWebsite);
-            $profile_id=$websiteTable->getWebsite($id);
-//             print_r($profile_id->profile_id);exit;
+            $profile_id = $websiteTable->getWebsite($id);
+;
             $ga = new gapi('seolawyers2012@gmail.com ', '9382devilx');
             /* We are using the 'source' dimension and the 'visits' metrics */
             $dimensions = array('landingPagePath');
-
-
             $metrics = array('pageviews');
 
             $ga->requestReportData($profile_id->profile_id, $dimensions, $metrics, '-pageviews', '', $from, $till, 1, 10);
@@ -105,11 +101,9 @@ class GoogleapiController extends AbstractActionController {
             foreach ($gaResults as $result) {
                 $google_api_data[$i]['path'] = $result;
                 $google_api_data[$i]['pageviews'] = $result->getPageviews();
-               
-                 $i=$i+1;
 
+                $i = $i + 1;
             }
-
             $dimensions = array('channelGrouping');
             $metrics = array('sessions');
             $filter = 'channelGrouping == Organic Search';
@@ -118,9 +112,8 @@ class GoogleapiController extends AbstractActionController {
 
             $i = 0;
             foreach ($gaResults as $result) {
-                $google_api_data['organic']=$result->getSessions();
-                
-            }  
+                $google_api_data['organic'] = $result->getSessions();
+            }
             return $google_api_data;
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
@@ -142,7 +135,6 @@ class GoogleapiController extends AbstractActionController {
                 $day = rtrim($parts[1], ',');
                 $all_ranges[] = $parts[2] . '-' . $month . '-' . sprintf("%02s", $day);
             }
-//            print_r($all_ranges);exit;
             $session = new Container('googleapi');
             $session->offsetSet('current_website_id', $website_id);
             $session->offsetSet('id', $id);
@@ -151,6 +143,20 @@ class GoogleapiController extends AbstractActionController {
             $session->offsetSet('daterange', $daterange);
             $link_client_id = $session->offsetGet('googleapi_client_id');
             return $this->redirect()->toUrl('/googleapi/index/' . $link_client_id);
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
+    }
+    
+    
+        public function changewebsiteAction() {
+        if ($user = $this->identity()) {
+            $website_id = (int) $this->params()->fromRoute('id', 0);
+            $session = new Container('googleapi');
+            $googleapi_client_id = $session->offsetGet('googleapi_client_id');
+            $session->offsetSet('current_website_id', $website_id);
+            $session->offsetSet('msg', "");
+            return $this->redirect()->toUrl('/googleapi/index/' . $googleapi_client_id);
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }

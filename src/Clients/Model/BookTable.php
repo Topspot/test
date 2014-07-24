@@ -87,10 +87,10 @@ class BookTable {
         $where->between('date', $from, $till);
 //        $where->greaterThanOrEqualTo('date', $from);
 //        $where->lessThanOrEqualTo('date', $till);
-        $resultSet = $this->tableGateway->select($where)->toArray();
+        $resultSet = $this->tableGateway->select($where);
 //        print_r($resultSet);
 //        exit;
-//        $resultSet->buffer();
+        $resultSet->buffer();
         return $resultSet;
     }
 

@@ -8,6 +8,7 @@ $auth = new AuthenticationService();
 <div class="row">
     <div class="col-xs-12"> 
         <?php
+         $rowCount = count($website_data);
 //  print_r($auth->getIdentity()->roles_id);
 //  print_r($applying_user_rights->crud_link);exit;
         if (isset($message) && $message != '') {
@@ -47,32 +48,7 @@ $auth = new AuthenticationService();
                    <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
                    <span></span> <b class="caret"></b>
                </div>
-            </div>
-             
-        </div>    
-        <div class="table-header" style="min-height: 42px;">
-            <?php if ($auth->getIdentity()->roles_id == 3) {
-                ?>
-
-                <?php
-            } else if ($auth->getIdentity()->roles_id == 2) {
-                if ($applying_user_rights->crud_transcript == 1) {
-                    ?>
-             <a href="/transcript/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Transcript</a>
-            <a href="#" class="btn btn-danger pull-right multiple-delete" data-id="transcript">Delete Selected Transcripts</a>
-                <?php
-                } else {
-                    
-                }
-            } else {
-                ?>   
-            <a href="/transcript/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Transcript</a>
-            <a href="#" class="btn btn-danger pull-right multiple-delete" data-id="transcript">Delete Selected Transcripts</a>
-                <?php
-            }
-            ?>            
-            <div class="pull-right">
-
+            <div class="pull-left">
                 <select class="form-control" id="form-field-select-1" data-id="transcript" style="width: 300px; margin-right: 15px; margin-top: 5px;">
                     <?php if (isset($current_website_id) && $current_website_id != '') { ?>
                         <?php
@@ -102,17 +78,88 @@ $auth = new AuthenticationService();
                     ?>
                 </select>
 
-            </div>
-            <a href="#" onclick="downloadAll(<?php echo $current_website_id; ?>);" class="btn btn-grey pull-right" data-id="transcript" style="margin-right: 10px;">Download All</a>
-             <?php
-             $num=0;
+            </div> 
+                 <?php if ($auth->getIdentity()->roles_id == 3) {
+                ?>
+
+                <?php
+            } else if ($auth->getIdentity()->roles_id == 2) {
+                if ($applying_user_rights->crud_transcript == 1) {
+                    ?>
+                <div class="pull-left" style="margin-left: 0px">
+                   <a href="/transcript/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Transcript</a>
+                </div>   
+                <div class="pull-left" style="margin-left: 10px">
+                     <?php if($rowCount > 0){
+                         ?>
+                    <a href="#" class="btn btn-danger pull-right multiple-delete" data-id="transcript">Delete Transcripts</a>
+                     <?php } ?>
+                </div>   
+                <div class="pull-left" style="margin-left: 10px">
+                    <?php
+                        $num=0;
                         foreach ($website_data as $transcriptt) {                            
                             $session->offsetSet('leadobject'.$num, $transcriptt);
                             $num=$num+1;
-                        }    
-            ?>
+                        }  
+                       if($rowCount > 0){
+                         ?>
+                    <a href="/transcript/exportdata/<?php echo $num-1; ?>" class="btn btn-grey pull-right" data-id="transcript" style="margin-right: 10px;">Export</a>
+                       <?php } ?>
+                </div> 
+                <div class="pull-left" style="margin-left: 5px">
+                    <?php if($rowCount > 0){
+                         ?>
+                     <a href="#" onclick="downloadAll(<?php echo $current_website_id; ?>);" class="btn btn-grey pull-right" data-id="transcript" style="margin-right: 10px;">Download All</a>
+                      <?php } ?>
+                </div>
+        
+                <?php
+                } else {
+                    
+                }
+            } else {
+                 ?>
+                <div class="pull-left" style="margin-left: 0px">
+                   <a href="/transcript/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Transcript</a>
+                </div>   
+                <div class="pull-left" style="margin-left: 10px">
+                     <?php if($rowCount > 0){
+                         ?>
+                    <a href="#" class="btn btn-danger pull-right multiple-delete" data-id="transcript">Delete Transcripts</a>
+                     <?php } ?>
+                </div>   
+                <div class="pull-left" style="margin-left: 10px">
+                    <?php
+                        $num=0;
+                        foreach ($website_data as $transcriptt) {                            
+                            $session->offsetSet('leadobject'.$num, $transcriptt);
+                            $num=$num+1;
+                        }  
+                       if($rowCount > 0){
+                         ?>
+                    <a href="/transcript/exportdata/<?php echo $num-1; ?>" class="btn btn-grey pull-right" data-id="transcript" style="margin-right: 10px;">Export</a>
+                       <?php } ?>
+                </div> 
+                <div class="pull-left" style="margin-left: 5px">
+                    <?php if($rowCount > 0){
+                         ?>
+                     <a href="#" onclick="downloadAll(<?php echo $current_website_id; ?>);" class="btn btn-grey pull-right" data-id="transcript" style="margin-right: 10px;">Download All</a>
+                      <?php } ?>
+                </div>
+        
+                <?php
+            }
+            ?>    
+                
+            </div>
+             
+        </div>   
+       <?php if ($rowCount > 0) { ?>
+        <div class="table-header" style="min-height: 42px;">
+                   
 
-            <a href="/transcript/exportdata/<?php echo $num-1; ?>" class="btn btn-grey pull-right" data-id="transcript" style="margin-right: 10px;">Export</a>
+        
         </div>
 
         <div class="table-responsive">
@@ -263,6 +310,9 @@ $auth = new AuthenticationService();
                 </tbody>
             </table>
         </div>
+        <?php }else{
+            echo "NO RESULT FOUND";
+        } ?> 
     </div>
 </div>
 <div id="modal-table" class="modal fade" tabindex="-1">

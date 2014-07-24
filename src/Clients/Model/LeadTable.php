@@ -37,6 +37,8 @@ class LeadTable {
                 'lead_name' => $lead->lead_name,
                 'lead_email' => $lead->lead_email,
                 'website_id' => $lead->website_id,
+                'client_name' => $lead->client_name,
+                'website' => $lead->website,
             );
         }
         $id = (int) $lead->id;
