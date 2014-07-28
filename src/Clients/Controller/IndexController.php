@@ -28,6 +28,17 @@ use Clients\Model\WebsiteTable;
 use Zend\Session\Container;
 use Clients\Model\UserRightTable;
 use Clients\Model\UserRight;
+use Clients\Model\Transcript;
+use Clients\Model\TranscriptTable;
+use Clients\Model\Lead;
+use Clients\Model\LeadTable;
+use Clients\Model\Link;
+use Clients\Model\LinkTable;
+use Clients\Model\Book;
+use Clients\Model\BookTable;
+use PHPExcel;
+use Excel2007;
+use IOFactory;
 
 class IndexController extends AbstractActionController {
 
@@ -39,27 +50,203 @@ class IndexController extends AbstractActionController {
         }
     }
 
+    public function selectAction() {
+        if ($user = $this->identity()) {
+
+            $id = (int) $this->params()->fromRoute('id', 0);
+//         print_r();exit;
+            if ($id == 0) {
+                print_r("Could not find ID");
+                exit;
+            }
+            $viewModel = new ViewModel(array(
+                'id' => $id,
+            ));
+            return $viewModel;
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
+    }
+
+    public function reportAction() {
+        if ($user = $this->identity()) {
+            $daterange = $_GET['daterange'];
+            $website_id = $_GET['websiteid'];
+//            print_r($daterange. '---------'.$website_id);exit;
+            $ranges = explode('-', $daterange);
+            $all_ranges = array();
+            foreach ($ranges as $range) {
+                $range = trim($range);
+                $parts = explode(' ', $range);
+                $month = date("m", strtotime($parts[0]));
+                $day = rtrim($parts[1], ',');
+                $all_ranges[] = $parts[2] . '-' . $month . '-' . sprintf("%02s", $day);
+            }
+            $from = $all_ranges[0];
+            $till = $all_ranges[1];
+
+            //link
+            $tableGatewayLink = $this->getConnectionLink();
+            $linkTable = new LinkTable($tableGatewayLink);
+            $website_links_data = $linkTable->alldateRange($from, $till);
+
+            //lead
+            $tableGatewayLead = $this->getConnectionLead();
+            $leadTable = new LeadTable($tableGatewayLead);
+            $website_leads_data = $leadTable->alldateRange($from, $till);
+
+            //book            
+            $tableGatewayBook = $this->getConnectionBook();
+            $bookTable = new BookTable($tableGatewayBook);
+            $website_books_data = $bookTable->alldateRange($from, $till);
+
+            //transcript
+            $from = $from . ' 00:00:00';
+            $till = $till . ' 23:59:59';
+            $tableGatewayTranscript = $this->getConnectionTranscript();
+            $transcriptTable = new TranscriptTable($tableGatewayTranscript);
+            $website_transcripts_data = $transcriptTable->alldateRange($from, $till);
+//            print_r($website_transcripts_data);
+//           exit;
+            // Create new PHPExcel object
+            $objPHPExcel = new PHPExcel();
+
+// Set document properties
+            $objPHPExcel->getProperties()->setCreator("Speak Easy Marketing Inc")
+                    ->setLastModifiedBy("Maarten Balliauw")
+                    ->setTitle("Office 2007 XLSX Test Document")
+                    ->setSubject("Office 2007 XLSX Test Document")
+                    ->setDescription("Test document for Office 2007 XLSX, generated using PHP classes.")
+                    ->setKeywords("office 2007 openxml php")
+                    ->setCategory("Test result file");
+
+// Add some data
+            $objPHPExcel->setActiveSheetIndex(0)
+                    ->setCellValue('A1', 'LINKS');
+            $objPHPExcel->getActiveSheet()->getStyle('A1:B1')->getFont()->setBold(true);
+            $cell = 2;
+            $objPHPExcel->setActiveSheetIndex(0)
+                    ->setCellValue('A' . $cell, 'Date')
+                    ->setCellValue('B' . $cell, 'URL');
+
+            $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':B' . $cell)->getFont()->setBold(true);
+
+//                    print_r($website_links_data);
+            foreach ($website_links_data as $link) {
+                $cell = $cell + 1;
+                $objPHPExcel->setActiveSheetIndex(0)
+                        ->setCellValue('A' . $cell, $link->date)
+                        ->setCellValue('B' . $cell, $link->url);
+            }
+            $cell = $cell + 1;
+            // Add some data
+            $objPHPExcel->setActiveSheetIndex(0)
+                    ->setCellValue('A' . $cell, 'TRANSCRIPTS');
+            $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':B' . $cell)->getFont()->setBold(true);
+            $cell = $cell + 1;
+            $objPHPExcel->setActiveSheetIndex(0)
+                    ->setCellValue('A' . $cell, 'Name')
+                    ->setCellValue('B' . $cell, 'Date Recevied')
+                    ->setCellValue('C' . $cell, 'Date Posted')
+                    ->setCellValue('D' . $cell, 'Date Revised');
+            $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':D' . $cell)->getFont()->setBold(true);
+            foreach ($website_transcripts_data as $transcripts) {
+                $cell = $cell + 1;
+                $objPHPExcel->setActiveSheetIndex(0)
+                        ->setCellValue('A' . $cell, $transcripts->name)
+                        ->setCellValue('C' . $cell, $transcripts->date_received)
+                        ->setCellValue('B' . $cell, $transcripts->date_posted)
+                        ->setCellValue('D' . $cell, $transcripts->date_revised);
+            }
+            $cell = $cell + 1;
+            $objPHPExcel->setActiveSheetIndex(0)
+                    ->setCellValue('A' . $cell, 'LEADS');
+            $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':B' . $cell)->getFont()->setBold(true);
+            $cell = $cell + 1;
+            $objPHPExcel->setActiveSheetIndex(0)
+                    ->setCellValue('A' . $cell, 'Caller Type')
+                    ->setCellValue('B' . $cell, 'Lead Date')
+                    ->setCellValue('C' . $cell, 'Lead Source')
+                    ->setCellValue('D' . $cell, 'Incomming Ph')
+                    ->setCellValue('E' . $cell, 'Call Duration')
+                    ->setCellValue('F' . $cell, 'Leads Name')
+                    ->setCellValue('G' . $cell, 'Leads email');
+            $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':G' . $cell)->getFont()->setBold(true);
+
+            foreach ($website_leads_data as $leads) {
+                $cell = $cell + 1;
+                $objPHPExcel->setActiveSheetIndex(0)
+                        ->setCellValue('A' . $cell, $leads->caller_type)
+                        ->setCellValue('B' . $cell, $leads->lead_date)
+                        ->setCellValue('C' . $cell, $leads->lead_source)
+                        ->setCellValue('D' . $cell, $leads->inc_phone)
+                        ->setCellValue('E' . $cell, $leads->call_duration)
+                        ->setCellValue('F' . $cell, $leads->lead_name)
+                        ->setCellValue('G' . $cell, $leads->lead_email);
+            }
+
+            $cell = $cell + 1;
+            $objPHPExcel->setActiveSheetIndex(0)
+                    ->setCellValue('A' . $cell, 'BOOKS');
+            $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':B' . $cell)->getFont()->setBold(true);
+            $cell = $cell + 1;
+            $objPHPExcel->setActiveSheetIndex(0)
+                    ->setCellValue('A' . $cell, 'Name');
+            $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':G' . $cell)->getFont()->setBold(true);
+            foreach ($website_books_data as $book) {
+                $cell = $cell + 1;
+                $objPHPExcel->setActiveSheetIndex(0)
+                        ->setCellValue('A' . $cell, $book->name);
+            }
+
+// Rename worksheet
+            $objPHPExcel->getActiveSheet()->setTitle('Reports');
+
+// Set active sheet index to the first sheet, so Excel opens this as the first sheet
+            $objPHPExcel->setActiveSheetIndex(0);
+
+// Redirect output to a clientâ€™s web browser (Excel2007)
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment;filename="report.xlsx"');
+            header('Cache-Control: max-age=0');
+// If you're serving to IE 9, then the following may be needed
+            header('Cache-Control: max-age=1');
+
+// If you're serving to IE over SSL, then the following may be needed
+            header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+            header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always modified
+            header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+            header('Pragma: public'); // HTTP/1.0
+
+            $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+            $objWriter->save('php://output');
+            exit;
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
+    }
+
     public function listAction() {
         if ($user = $this->identity()) {
-            
-             //get current user data
+
+            //get current user data
             $auth = new AuthenticationService();
-            $user_data=$auth->getIdentity();
-            
+            $user_data = $auth->getIdentity();
+
             $session = new Container('link');
             $delete_msg = $session->offsetGet('delete_user_msg');
             $tableGateway = $this->getConnection();
             $clientTable = new ClientTable($tableGateway);
             $tableGatewayWebsite = $this->getConnectionWebsite();
-            
+
             $websiteTable = new WebsiteTable($tableGatewayWebsite);
-            $tableGatewayUserRights = $this->getConnectionUserRights();             
+            $tableGatewayUserRights = $this->getConnectionUserRights();
             $UserRight = new UserRightTable($tableGatewayUserRights);
-             if ($auth->getIdentity()->roles_id == 2) {
-                  $applying_user_rights=$UserRight->getUserRightUser($user_data->usr_id);
-             }else{
-                  $applying_user_rights='';
-             }
+            if ($auth->getIdentity()->roles_id == 2) {
+                $applying_user_rights = $UserRight->getUserRightUser($user_data->usr_id);
+            } else {
+                $applying_user_rights = '';
+            }
             if (isset($delete_msg) && $delete_msg != '') {
                 $viewModel = new ViewModel(array(
                     'clients' => $clientTable->fetchAll(),
@@ -258,14 +445,54 @@ class IndexController extends AbstractActionController {
         $tableGateway = new \Zend\Db\TableGateway\TableGateway('websites', $dbAdapter, null, $resultSetPrototype);
         return $tableGateway;
     }
-    
-        public function getConnectionUserRights() {        // set connection to User Rights table
+
+    public function getConnectionUserRights() {        // set connection to User Rights table
         $sm = $this->getServiceLocator();
         $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
         $resultSetPrototype = new \Zend\Db\ResultSet\ResultSet();
         $resultSetPrototype->setArrayObjectPrototype(new
                 \Clients\Model\UserRight);
         $tableGateway = new \Zend\Db\TableGateway\TableGateway('user_rights', $dbAdapter, null, $resultSetPrototype);
+        return $tableGateway;
+    }
+
+    public function getConnectionLink() {        // set connection to Link table
+        $sm = $this->getServiceLocator();
+        $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+        $resultSetPrototype = new \Zend\Db\ResultSet\ResultSet();
+        $resultSetPrototype->setArrayObjectPrototype(new
+                \Clients\Model\Link);
+        $tableGateway = new \Zend\Db\TableGateway\TableGateway('links', $dbAdapter, null, $resultSetPrototype);
+        return $tableGateway;
+    }
+
+    public function getConnectionTranscript() {        // set connection to transcript table
+        $sm = $this->getServiceLocator();
+        $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+        $resultSetPrototype = new \Zend\Db\ResultSet\ResultSet();
+        $resultSetPrototype->setArrayObjectPrototype(new
+                \Clients\Model\Transcript);
+        $tableGateway = new \Zend\Db\TableGateway\TableGateway('transcripts', $dbAdapter, null, $resultSetPrototype);
+        return $tableGateway;
+    }
+
+    public function getConnectionLead() {        // set connection to transcript table
+        $sm = $this->getServiceLocator();
+        $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+        $resultSetPrototype = new \Zend\Db\ResultSet\ResultSet();
+        $resultSetPrototype->setArrayObjectPrototype(new
+                \Clients\Model\Lead);
+        $tableGateway = new \Zend\Db\TableGateway\TableGateway('leads', $dbAdapter, null, $resultSetPrototype);
+        return $tableGateway;
+    }
+
+    public function getConnectionBook() {        // set connection to Book table
+        $sm = $this->getServiceLocator();
+        $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+        $resultSetPrototype = new \Zend\Db\ResultSet\ResultSet();
+        $resultSetPrototype->setArrayObjectPrototype(new
+                \Clients\Model\Book);
+        $tableGateway = new \Zend\Db\TableGateway\TableGateway('books', $dbAdapter, null, $resultSetPrototype);
         return $tableGateway;
     }
 

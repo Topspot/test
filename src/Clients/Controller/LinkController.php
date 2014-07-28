@@ -110,6 +110,8 @@ class LinkController extends AbstractActionController {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
     }
+    
+
 
     public function addAction() {
         if ($user = $this->identity()) {
@@ -127,6 +129,7 @@ class LinkController extends AbstractActionController {
             }
             $form = new AddLinkForm();
             if ($this->request->isPost()) {
+//                print_r("POST");exit;
                 $tableGateway = $this->getConnection();
                 $post = $this->request->getPost();
                 $post->website_id = $id;
@@ -144,6 +147,7 @@ class LinkController extends AbstractActionController {
 
 
             $viewModel = new ViewModel(array('form' => $form, 'id' => $id));
+//            $viewModel->setTerminal(true);
             return $viewModel;
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another

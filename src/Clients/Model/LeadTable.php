@@ -117,5 +117,13 @@ class LeadTable {
 //        $resultSet->buffer();
         return $resultSet;
     }
+        public function alldateRange($from, $till) {
+        $where = new Where();
+        $where->between('lead_date', $from, $till);
+        $resultSet = $this->tableGateway->select($where);
+
+        $resultSet->buffer();
+        return $resultSet;
+    }
 
 }

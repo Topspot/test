@@ -33,13 +33,13 @@ class BookController extends AbstractActionController {
 
     public function indexAction() {
         if ($user = $this->identity()) {
-            
-             error_reporting(E_ALL);
+
+            error_reporting(E_ALL);
             ini_set('display_errors', '1');
             //get current user data
             $auth = new AuthenticationService();
-            $user_data=$auth->getIdentity();
-           
+            $user_data = $auth->getIdentity();
+
             $id = (int) $this->params()->fromRoute('id', 0);
             $session = new Container('book');
             $session->offsetSet('book_client_id', $id);
@@ -56,21 +56,21 @@ class BookController extends AbstractActionController {
 
             $tableGateway = $this->getConnection();
             $bookTable = new BookTable($tableGateway);
-            
+
             $websiteTable = new WebsiteTable($tableGatewayWebsite);
             $tableGatewayUserRights = $this->getConnectionUserRights();
             $UserRight = new UserRightTable($tableGatewayUserRights);
-             if ($auth->getIdentity()->roles_id == 2) {
-                  $applying_user_rights=$UserRight->getUserRightUser($user_data->usr_id);
-             }else{
-                  $applying_user_rights='';
-             }            
+            if ($auth->getIdentity()->roles_id == 2) {
+                $applying_user_rights = $UserRight->getUserRightUser($user_data->usr_id);
+            } else {
+                $applying_user_rights = '';
+            }
             if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
                 $current_website_id = $session->offsetGet('current_website_id');
                 if ($session->offsetExists('from') && $session->offsetGet('from') != '') {
                     $current_website_book = $this->setDateRange();
                 } else {
-                                    
+
                     $current_website_book = $bookTable->getBookWebsite($current_website_id);
 //                     print_r($current_website_book);exit;
                 }
@@ -117,12 +117,13 @@ class BookController extends AbstractActionController {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
     }
+
     public function exportdataAction() {
         if ($user = $this->identity()) {
             $num = (int) $this->params()->fromRoute('id', 0);
 
             $session = new Container('book');
-                    ini_set("display_errors", "1");
+            ini_set("display_errors", "1");
             error_reporting(E_ALL & ~E_NOTICE);
 // Create new PHPExcel object
             $objPHPExcel = new PHPExcel();
@@ -340,7 +341,7 @@ class BookController extends AbstractActionController {
                 $parts = explode(' ', $range);
                 $month = date("m", strtotime($parts[0]));
                 $day = rtrim($parts[1], ',');
-               $all_ranges[] = $parts[2] . '-' . $month . '-' . sprintf("%02s", $day);
+                $all_ranges[] = $parts[2] . '-' . $month . '-' . sprintf("%02s", $day);
             }
 
             $session = new Container('book');
@@ -384,7 +385,8 @@ class BookController extends AbstractActionController {
         $tableGateway = new \Zend\Db\TableGateway\TableGateway('websites', $dbAdapter, null, $resultSetPrototype);
         return $tableGateway;
     }
-            public function getConnectionUserRights() {        // set connection to User Rights table
+
+    public function getConnectionUserRights() {        // set connection to User Rights table
         $sm = $this->getServiceLocator();
         $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
         $resultSetPrototype = new \Zend\Db\ResultSet\ResultSet();

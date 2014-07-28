@@ -21,6 +21,7 @@ class BookTable {
         $data = array(
             'name' => $book->name,
             'website_id' => $book->website_id,
+            'date' => date('Y-m-d H:i:s'),
         );
 
         $id = (int) $book->id;
@@ -90,6 +91,14 @@ class BookTable {
         $resultSet = $this->tableGateway->select($where);
 //        print_r($resultSet);
 //        exit;
+        $resultSet->buffer();
+        return $resultSet;
+    }
+        public function alldateRange($from, $till) {
+        $where = new Where();
+        $where->between('date', $from, $till);
+        $resultSet = $this->tableGateway->select($where);
+
         $resultSet->buffer();
         return $resultSet;
     }

@@ -96,5 +96,13 @@ class TranscriptTable {
         $resultSet->buffer();
         return $resultSet;
     }
+    public function alldateRange($from, $till) {
+        $where = new Where();
+        $where->between('created_at', $from, $till);
+        $resultSet = $this->tableGateway->select($where);
+
+        $resultSet->buffer();
+        return $resultSet;
+    }
 
 }

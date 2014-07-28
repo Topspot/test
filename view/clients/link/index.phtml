@@ -87,7 +87,7 @@ $auth = new AuthenticationService();
             } else if ($auth->getIdentity()->roles_id == 2) {
                 if ($applying_user_rights->crud_link == 1) {
                     ?>
-                 <div class="pull-left" style="margin-left: 15px">
+                 <div class="pull-left" style="margin-left: 15px">                
                     <a href="/link/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Link</a>
                 </div>   
                 <div class="pull-left" style="margin-left: 15px">
@@ -115,7 +115,8 @@ $auth = new AuthenticationService();
             } else {
                 ?>   
                 <div class="pull-left" style="margin-left: 15px">
-                    <a href="/link/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Link</a>
+             
+                   <a href="/link/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Link</a>
                 </div>   
                 <div class="pull-left" style="margin-left: 15px">
                      <?php if($rowCount > 0){

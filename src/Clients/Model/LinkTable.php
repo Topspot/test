@@ -94,5 +94,16 @@ class LinkTable {
         $resultSet->buffer();
         return $resultSet;
     }
+    public function alldateRange($from, $till) {
+        $where = new Where();
+        $where->between('date', $from, $till);
+//        $where->greaterThanOrEqualTo('date', $from);
+//        $where->lessThanOrEqualTo('date', $till);
+        $resultSet = $this->tableGateway->select($where);
+//        print_r($resultSet);
+//        exit;
+        $resultSet->buffer();
+        return $resultSet;
+    }
 
 }

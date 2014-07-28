@@ -82,10 +82,11 @@ class GoogleapiController extends AbstractActionController {
             $till = $session->offsetGet('till');
             $website_id = $session->offsetGet('current_website_id');
             $id = $session->offsetGet('id');
+          
             $tableGatewayWebsite = $this->getConnectionWebsite();
             $websiteTable = new WebsiteTable($tableGatewayWebsite);
             $profile_id = $websiteTable->getWebsite($id);
-;
+//;  print_r($profile_id);exit;
             $ga = new gapi('seolawyers2012@gmail.com ', '9382devilx');
             /* We are using the 'source' dimension and the 'visits' metrics */
             $dimensions = array('landingPagePath');
