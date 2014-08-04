@@ -72,7 +72,6 @@ class BookController extends AbstractActionController {
                 } else {
 
                     $current_website_book = $bookTable->getBookWebsite($current_website_id);
-//                     print_r($current_website_book);exit;
                 }
 
 
@@ -123,8 +122,6 @@ class BookController extends AbstractActionController {
             $num = (int) $this->params()->fromRoute('id', 0);
 
             $session = new Container('book');
-            ini_set("display_errors", "1");
-            error_reporting(E_ALL & ~E_NOTICE);
 // Create new PHPExcel object
             $objPHPExcel = new PHPExcel();
 // Set document properties
@@ -142,11 +139,12 @@ class BookController extends AbstractActionController {
             $objPHPExcel->getActiveSheet()->getStyle('A1:B1')->getFont()->setBold(true);
             for ($i = 0; $i <= $num; $i++) {
                 $data = $session->offsetGet('leadobject' . $i);
-//                print_r($data);exit;
+                print_r($data->name);
                 $cell = $i + 2;
                 $objPHPExcel->setActiveSheetIndex(0)
                         ->setCellValue('A' . $cell, $data->name);
             }
+//            exit;
 // Rename worksheet
             $objPHPExcel->getActiveSheet()->setTitle('Books');
 
@@ -202,7 +200,7 @@ class BookController extends AbstractActionController {
                 $session->offsetSet('msg', "Book has been successfully Added.");
                 return $this->redirect()->toUrl('/book/index/' . $book_client_id);
             }
-            $viewModel = new ViewModel(array('form' => $form, 'id' => $id));
+            $viewModel = new ViewModel(array('form' => $form, 'id' => $id,'book_client_id' => $book_client_id));
             return $viewModel;
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
@@ -220,7 +218,6 @@ class BookController extends AbstractActionController {
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
-//         print_r($website_id);exit;
     }
 
     public function editAction() {
@@ -228,7 +225,6 @@ class BookController extends AbstractActionController {
             $id = (int) $this->params()->fromRoute('id', 0);
             $session = new Container('book');
             $book_client_id = $session->offsetGet('book_client_id');
-//        $session->offsetSet('current_website_id', $id);
             $session->offsetSet('msg', "Book has been successfully Updated.");
             if (!$id) {
                 return $this->redirect()->toRoute(NULL, array(
@@ -238,24 +234,16 @@ class BookController extends AbstractActionController {
             }
             $tableGateway = $this->getConnection();
             $bookTable = new BookTable($tableGateway);
-
-
             $form = new EditBookForm();
             if ($this->request->isPost()) {
-
                 $post = $this->request->getPost();
                 //saving Client data table
                 $book = $bookTable->getBook($post->id);
-
                 $form->bind($book);
                 $form->setData($post);
-
                 $book->name = $post->name;
                 $session->offsetSet('current_website_id', $book->website_id);
-
                 $bookTable->saveBook($book);
-
-
                 return $this->redirect()->toUrl('/book/index/' . $book_client_id);
             }
             $book = $bookTable->getBook($this->params()->fromRoute('id'));
@@ -264,6 +252,7 @@ class BookController extends AbstractActionController {
             $viewModel = new ViewModel(array(
                 'form' => $form,
                 'id' => $this->params()->fromRoute('id'),
+                'book_client_id' => $book_client_id
             ));
             return $viewModel;
         } else {
@@ -275,7 +264,6 @@ class BookController extends AbstractActionController {
         header('Content-Type: application/json');
 
         $id = (int) $this->params()->fromRoute('id', 0);
-//                    Debug::dump($id);exit;
         if (!$id) {
             return $this->redirect()->toRoute(NULL, array(
                         'controller' => 'index',
@@ -285,10 +273,7 @@ class BookController extends AbstractActionController {
         //delete Book for a client website
         $tableGateway = $this->getConnection();
         $bookTable = new BookTable($tableGateway);
-//        $data=$bookTable->getBook($id);
         $bookTable->deleteBook($id);
-
-
         echo json_encode(array('data' => ''));
         exit();
     }
@@ -306,8 +291,6 @@ class BookController extends AbstractActionController {
         $tableGateway = $this->getConnection();
         $bookTable = new BookTable($tableGateway);
         $data = $bookTable->getBookWebsite($id);
-
-//         Debug::dump($value->url);exit;
 
         echo json_encode(array('data' => (array) $data));
         exit();

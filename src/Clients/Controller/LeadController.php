@@ -362,6 +362,7 @@ class LeadController extends AbstractActionController {
             $viewModel = new ViewModel(array(
                 'form' => $form,
                 'id' => $this->params()->fromRoute('id'),
+                'lead_client_id' => $lead_client_id,
             ));
             return $viewModel;
         } else {

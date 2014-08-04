@@ -59,8 +59,19 @@ class IndexController extends AbstractActionController {
                 print_r("Could not find ID");
                 exit;
             }
+            
+            $tableGateway = $this->getConnection();
+            $clientTable = new ClientTable($tableGateway);
+            $clients=$clientTable->getClient($id);
+            
+            $tableGatewayWebsite = $this->getConnectionWebsite();
+            $websiteTable = new WebsiteTable($tableGatewayWebsite);
+            $client_websites=$websiteTable->getWebsiteClients($id);
+            
             $viewModel = new ViewModel(array(
                 'id' => $id,
+                'clients' => $clients,
+                'client_websites' => $client_websites,
             ));
             return $viewModel;
         } else {
@@ -121,82 +132,96 @@ class IndexController extends AbstractActionController {
                     ->setCategory("Test result file");
 
 // Add some data
+            $cell = 2;
+              $rowCount = count($website_data);
+            if ($rowCount > 0) {
             $objPHPExcel->setActiveSheetIndex(0)
                     ->setCellValue('A1', 'LINKS');
             $objPHPExcel->getActiveSheet()->getStyle('A1:B1')->getFont()->setBold(true);
-            $cell = 2;
-            $objPHPExcel->setActiveSheetIndex(0)
-                    ->setCellValue('A' . $cell, 'Date')
-                    ->setCellValue('B' . $cell, 'URL');
+            
+          
+                $objPHPExcel->setActiveSheetIndex(0)
+                        ->setCellValue('A' . $cell, 'Date')
+                        ->setCellValue('B' . $cell, 'URL');
 
-            $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':B' . $cell)->getFont()->setBold(true);
+                $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':B' . $cell)->getFont()->setBold(true);
 
 //                    print_r($website_links_data);
-            foreach ($website_links_data as $link) {
+                foreach ($website_links_data as $link) {
+                    $cell = $cell + 1;
+                    $objPHPExcel->setActiveSheetIndex(0)
+                            ->setCellValue('A' . $cell, $link->date)
+                            ->setCellValue('B' . $cell, $link->url);
+                }
+                $cell = $cell + 1;
+            }
+            $rowCount = count($website_transcripts_data);
+            if ($rowCount > 0) {
+                // Add some data
+                $objPHPExcel->setActiveSheetIndex(0)
+                        ->setCellValue('A' . $cell, 'TRANSCRIPTS');
+                $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':B' . $cell)->getFont()->setBold(true);
                 $cell = $cell + 1;
                 $objPHPExcel->setActiveSheetIndex(0)
-                        ->setCellValue('A' . $cell, $link->date)
-                        ->setCellValue('B' . $cell, $link->url);
+                        ->setCellValue('A' . $cell, 'Name')
+                        ->setCellValue('B' . $cell, 'Date Recevied')
+                        ->setCellValue('C' . $cell, 'Date Posted')
+                        ->setCellValue('D' . $cell, 'Date Revised');
+                $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':D' . $cell)->getFont()->setBold(true);
+                foreach ($website_transcripts_data as $transcripts) {
+                    $cell = $cell + 1;
+                    $objPHPExcel->setActiveSheetIndex(0)
+                            ->setCellValue('A' . $cell, $transcripts->name)
+                            ->setCellValue('C' . $cell, $transcripts->date_received)
+                            ->setCellValue('B' . $cell, $transcripts->date_posted)
+                            ->setCellValue('D' . $cell, $transcripts->date_revised);
+                }
+                $cell = $cell + 1;
             }
-            $cell = $cell + 1;
-            // Add some data
-            $objPHPExcel->setActiveSheetIndex(0)
-                    ->setCellValue('A' . $cell, 'TRANSCRIPTS');
-            $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':B' . $cell)->getFont()->setBold(true);
-            $cell = $cell + 1;
-            $objPHPExcel->setActiveSheetIndex(0)
-                    ->setCellValue('A' . $cell, 'Name')
-                    ->setCellValue('B' . $cell, 'Date Recevied')
-                    ->setCellValue('C' . $cell, 'Date Posted')
-                    ->setCellValue('D' . $cell, 'Date Revised');
-            $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':D' . $cell)->getFont()->setBold(true);
-            foreach ($website_transcripts_data as $transcripts) {
+            $rowCount = count($website_leads_data);
+            if ($rowCount > 0) {
+                $objPHPExcel->setActiveSheetIndex(0)
+                        ->setCellValue('A' . $cell, 'LEADS');
+                $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':B' . $cell)->getFont()->setBold(true);
                 $cell = $cell + 1;
                 $objPHPExcel->setActiveSheetIndex(0)
-                        ->setCellValue('A' . $cell, $transcripts->name)
-                        ->setCellValue('C' . $cell, $transcripts->date_received)
-                        ->setCellValue('B' . $cell, $transcripts->date_posted)
-                        ->setCellValue('D' . $cell, $transcripts->date_revised);
-            }
-            $cell = $cell + 1;
-            $objPHPExcel->setActiveSheetIndex(0)
-                    ->setCellValue('A' . $cell, 'LEADS');
-            $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':B' . $cell)->getFont()->setBold(true);
-            $cell = $cell + 1;
-            $objPHPExcel->setActiveSheetIndex(0)
-                    ->setCellValue('A' . $cell, 'Caller Type')
-                    ->setCellValue('B' . $cell, 'Lead Date')
-                    ->setCellValue('C' . $cell, 'Lead Source')
-                    ->setCellValue('D' . $cell, 'Incomming Ph')
-                    ->setCellValue('E' . $cell, 'Call Duration')
-                    ->setCellValue('F' . $cell, 'Leads Name')
-                    ->setCellValue('G' . $cell, 'Leads email');
-            $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':G' . $cell)->getFont()->setBold(true);
+                        ->setCellValue('A' . $cell, 'Caller Type')
+                        ->setCellValue('B' . $cell, 'Lead Date')
+                        ->setCellValue('C' . $cell, 'Lead Source')
+                        ->setCellValue('D' . $cell, 'Incomming Ph')
+                        ->setCellValue('E' . $cell, 'Call Duration')
+                        ->setCellValue('F' . $cell, 'Leads Name')
+                        ->setCellValue('G' . $cell, 'Leads email');
+                $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':G' . $cell)->getFont()->setBold(true);
 
-            foreach ($website_leads_data as $leads) {
-                $cell = $cell + 1;
-                $objPHPExcel->setActiveSheetIndex(0)
-                        ->setCellValue('A' . $cell, $leads->caller_type)
-                        ->setCellValue('B' . $cell, $leads->lead_date)
-                        ->setCellValue('C' . $cell, $leads->lead_source)
-                        ->setCellValue('D' . $cell, $leads->inc_phone)
-                        ->setCellValue('E' . $cell, $leads->call_duration)
-                        ->setCellValue('F' . $cell, $leads->lead_name)
-                        ->setCellValue('G' . $cell, $leads->lead_email);
-            }
+                foreach ($website_leads_data as $leads) {
+                    $cell = $cell + 1;
+                    $objPHPExcel->setActiveSheetIndex(0)
+                            ->setCellValue('A' . $cell, $leads->caller_type)
+                            ->setCellValue('B' . $cell, $leads->lead_date)
+                            ->setCellValue('C' . $cell, $leads->lead_source)
+                            ->setCellValue('D' . $cell, $leads->inc_phone)
+                            ->setCellValue('E' . $cell, $leads->call_duration)
+                            ->setCellValue('F' . $cell, $leads->lead_name)
+                            ->setCellValue('G' . $cell, $leads->lead_email);
+                }
 
-            $cell = $cell + 1;
-            $objPHPExcel->setActiveSheetIndex(0)
-                    ->setCellValue('A' . $cell, 'BOOKS');
-            $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':B' . $cell)->getFont()->setBold(true);
-            $cell = $cell + 1;
-            $objPHPExcel->setActiveSheetIndex(0)
-                    ->setCellValue('A' . $cell, 'Name');
-            $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':G' . $cell)->getFont()->setBold(true);
-            foreach ($website_books_data as $book) {
+                $cell = $cell + 1;
+            }
+            $rowCount = count($website_books_data);
+            if ($rowCount > 0) {
+                $objPHPExcel->setActiveSheetIndex(0)
+                        ->setCellValue('A' . $cell, 'BOOKS');
+                $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':B' . $cell)->getFont()->setBold(true);
                 $cell = $cell + 1;
                 $objPHPExcel->setActiveSheetIndex(0)
-                        ->setCellValue('A' . $cell, $book->name);
+                        ->setCellValue('A' . $cell, 'Name');
+                $objPHPExcel->getActiveSheet()->getStyle('A' . $cell . ':G' . $cell)->getFont()->setBold(true);
+                foreach ($website_books_data as $book) {
+                    $cell = $cell + 1;
+                    $objPHPExcel->setActiveSheetIndex(0)
+                            ->setCellValue('A' . $cell, $book->name);
+                }
             }
 
 // Rename worksheet
@@ -235,10 +260,11 @@ class IndexController extends AbstractActionController {
 
             $session = new Container('link');
             $delete_msg = $session->offsetGet('delete_user_msg');
+            
             $tableGateway = $this->getConnection();
             $clientTable = new ClientTable($tableGateway);
+            
             $tableGatewayWebsite = $this->getConnectionWebsite();
-
             $websiteTable = new WebsiteTable($tableGatewayWebsite);
             $tableGatewayUserRights = $this->getConnectionUserRights();
             $UserRight = new UserRightTable($tableGatewayUserRights);

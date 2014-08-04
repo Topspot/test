@@ -146,7 +146,7 @@ class LinkController extends AbstractActionController {
             }
 
 
-            $viewModel = new ViewModel(array('form' => $form, 'id' => $id));
+            $viewModel = new ViewModel(array('form' => $form, 'id' => $id,'link_client_id' => $link_client_id));
 //            $viewModel->setTerminal(true);
             return $viewModel;
         } else {
@@ -270,6 +270,7 @@ class LinkController extends AbstractActionController {
             $viewModel = new ViewModel(array(
                 'form' => $form,
                 'id' => $this->params()->fromRoute('id'),
+                'link_client_id' => $link_client_id,
             ));
             return $viewModel;
         } else {

@@ -87,6 +87,9 @@ class UserRightTable {
     public function deleteUserRight($id) {
         $this->tableGateway->delete(array('id' => $id));
     }
+    public function deleteUserRightUser($id) {
+        $this->tableGateway->delete(array('user_id' => $id));
+    }
 
     public function deleteUserRightClient($id) {
         $this->tableGateway->delete(array('clients_id' => $id));

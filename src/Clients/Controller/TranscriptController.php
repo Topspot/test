@@ -230,7 +230,7 @@ class TranscriptController extends AbstractActionController {
             }
 //        print($form);exit;
 
-            $viewModel = new ViewModel(array('form' => $form, 'id' => $id));
+            $viewModel = new ViewModel(array('form' => $form, 'id' => $id ,'transcript_client_id' => $transcript_client_id));
             return $viewModel;
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
@@ -335,6 +335,7 @@ class TranscriptController extends AbstractActionController {
                 'form' => $form,
                 'id' => $this->params()->fromRoute('id'),
                 'fileupload' => $transcript->fileupload,
+                'transcript_client_id' => $transcript_client_id
             ));
             return $viewModel;
         } else {
