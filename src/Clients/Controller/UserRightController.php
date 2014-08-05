@@ -19,12 +19,15 @@ use Clients\Form\EditUserRightForm;
 use Clients\Form\EditUserRightFilter;
 use Auth\Model\UsersTable;
 use Auth\Model\Auth;
+use Zend\Session\Container;
 
 class UserRightController extends AbstractActionController {
 
     public function indexAction() {
         if ($user = $this->identity()) {
             $id = (int) $this->params()->fromRoute('id', 0);
+            $session = new Container('link');
+            $session->offsetSet('selected_client_id', '');
 //            error_reporting(E_ALL);
 //            ini_set('display_errors', '1');
             $tableGateway = $this->getConnection();

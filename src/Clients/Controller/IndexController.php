@@ -59,6 +59,8 @@ class IndexController extends AbstractActionController {
                 print_r("Could not find ID");
                 exit;
             }
+            $session = new Container('link');
+            $session->offsetSet('selected_client_id', $id);
             
             $tableGateway = $this->getConnection();
             $clientTable = new ClientTable($tableGateway);
@@ -260,7 +262,7 @@ class IndexController extends AbstractActionController {
 
             $session = new Container('link');
             $delete_msg = $session->offsetGet('delete_user_msg');
-            
+            $session->offsetSet('selected_client_id', '');
             $tableGateway = $this->getConnection();
             $clientTable = new ClientTable($tableGateway);
             

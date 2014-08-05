@@ -20,7 +20,6 @@ $auth = new AuthenticationService();
         </p>
     <?php endif ?>
     <?php
-//                          Debug::dump($this->form);exit;
     $form = $this->form;
     $form->prepare();
     $form->setAttribute('action', $this->url(NULL, array('controller' => 'Lead', 'action' => 'edit','id' => $id)));

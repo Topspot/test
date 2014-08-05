@@ -346,11 +346,10 @@ class LeadController extends AbstractActionController {
                     $lead->call_duration = $post->call_duration;
                 }
                 $lead->caller_type = $post->caller_type;
-
                 $lead->lead_name = $post->lead_name;
                 $lead->lead_email = $post->lead_email;
+                
                 $session->offsetSet('current_website_id', $lead->website_id);
-//             print_r($lead);exit;
                 $leadTable->saveLead($lead);
                 return $this->redirect()->toUrl('/lead/index/' . $lead_client_id);
             }
@@ -358,7 +357,9 @@ class LeadController extends AbstractActionController {
             $originalDate = $lead->date;
             $newDate = date("m/d/Y", strtotime($originalDate));
             $lead->date = $newDate;
+//            print_r($lead);exit;
             $form->bind($lead); //biding data to form
+            
             $viewModel = new ViewModel(array(
                 'form' => $form,
                 'id' => $this->params()->fromRoute('id'),
@@ -385,8 +386,6 @@ class LeadController extends AbstractActionController {
         $tableGateway = $this->getConnection();
         $leadTable = new LeadTable($tableGateway);
         $leadTable->deleteLead($id);
-
-
         echo json_encode(array('data' => ''));
         exit();
     }
