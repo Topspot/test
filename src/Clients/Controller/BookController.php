@@ -139,7 +139,7 @@ class BookController extends AbstractActionController {
             $objPHPExcel->getActiveSheet()->getStyle('A1:B1')->getFont()->setBold(true);
             for ($i = 0; $i <= $num; $i++) {
                 $data = $session->offsetGet('leadobject' . $i);
-                print_r($data->name);
+//                print_r($data->name);
                 $cell = $i + 2;
                 $objPHPExcel->setActiveSheetIndex(0)
                         ->setCellValue('A' . $cell, $data->name);

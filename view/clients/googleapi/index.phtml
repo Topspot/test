@@ -4,6 +4,7 @@ use Zend\Session\Container;
 use Zend\Authentication\AuthenticationService;
 
 $session = new Container('googleapi');
+$daterange = $session->offsetGet('daterange');
 $auth = new AuthenticationService();
 ?>
 <div class="row">
@@ -36,15 +37,22 @@ $auth = new AuthenticationService();
                 <?php
             }
         }
+          if (isset($daterange) && !empty($daterange)) {
         ?>    
-        <h3 class="header smaller lighter blue current-websiteid" data-id="">Website Traffics</h3>
-
+        <h3 class="header smaller lighter blue current-websiteid" data-id="<?php echo $daterange; ?>">Website Traffics</h3>
+         <?php }else{ ?>
+        <h3 class="header smaller lighter blue current-websiteid" data-id="Select Date Range">Website Traffics</h3>
+         <?php } ?>
         <div class="row ">
 
             <div class="well" style="overflow: auto;margin: 0 12px 10px;">
 
                 <div id="reportrange" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
+                    <?php if (isset($daterange) && !empty($daterange)) { ?>
+                    <input class="form-control get-date-range hidden" name="date-range-picker" id="date-range-picker" type="text" data-date-format="dd-mm-yyyy" value="<?php echo $daterange; ?>" />
+                    <?php }else{ ?>
                     <input class="form-control get-date-range hidden" name="date-range-picker" id="date-range-picker" type="text" data-date-format="dd-mm-yyyy" />
+                    <?php } ?>
                     <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
                     <span></span> <b class="caret"></b>
                 </div>
@@ -174,6 +182,7 @@ $auth = new AuthenticationService();
 <?php
 $message = '';
 $session->offsetSet('current_website_id', '');
+$session->offsetSet('daterange', '');
 $session->offsetSet('from', '');
 $session->offsetSet('till', '');
 $session->offsetSet('msg', '');

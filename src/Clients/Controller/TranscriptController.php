@@ -101,7 +101,7 @@ class TranscriptController extends AbstractActionController {
                     $current_website_transcript = $transcriptTable->getTranscriptWebsite($value->id);
                     break;
                 }
-
+                $session->offsetSet('daterange', '');
                 $viewModel = new ViewModel(array(
                     'client_websites' => $client_websites,
                     'website_data' => $current_website_transcript,

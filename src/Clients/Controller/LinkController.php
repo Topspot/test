@@ -97,6 +97,7 @@ class LinkController extends AbstractActionController {
                     $current_website_link = $linkTable->getLinkWebsite($value->id);
                     break;
                 }
+                $session->offsetSet('daterange', '');
                 $viewModel = new ViewModel(array(
                     'client_websites' => $client_websites,
                     'website_data' => $current_website_link,

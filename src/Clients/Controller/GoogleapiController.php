@@ -61,7 +61,7 @@ class GoogleapiController extends AbstractActionController {
                     'website_data' => $current_website_googleapi,
                 ));
             } else {
-
+                $session->offsetSet('daterange', '');
                 $viewModel = new ViewModel(array(
                     'client_websites' => $client_websites,
                     'current_website_id' => $current_website_id,

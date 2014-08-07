@@ -4,7 +4,7 @@ use Zend\Session\Container;
 
 $session = new Container('lead');
 $daterange = $session->offsetGet('daterange');
-
+//print_r($daterange);exit;
 use Zend\Authentication\AuthenticationService;
 
 $auth = new AuthenticationService();
@@ -40,17 +40,24 @@ $auth = new AuthenticationService();
                 <?php
             }
         }
+        if (isset($daterange) && !empty($daterange)) {
         ?>    
-        <h3 class="header smaller lighter blue current-websiteid" data-id="">Leads</h3>
-
+        <h3 class="header smaller lighter blue current-websiteid" data-id="<?php echo $daterange; ?>">Leads</h3>        
+        <?php }else{ ?>
+         <h3 class="header smaller lighter blue current-websiteid" data-id="Select Date Range">Leads</h3>
+        <?php } ?>
         <div class="row ">
 
             <div class="well" style="overflow: auto; margin: 0 12px 10px;">
 
                 <div id="reportrange" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
+                    <?php if (isset($daterange) && !empty($daterange)) { ?>
+                    <input class="form-control get-date-range hidden" name="date-range-picker" id="date-range-picker" type="text" data-date-format="dd-mm-yyyy" value="<?php echo $daterange; ?>" />
+                    <?php }else{ ?>
                     <input class="form-control get-date-range hidden" name="date-range-picker" id="date-range-picker" type="text" data-date-format="dd-mm-yyyy" />
-                    <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
-                    <span></span> <b class="caret"></b>
+                    <?php } ?>
+                    <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>                    
+                    <span></span>     <b class="caret"></b>
                 </div>
                 <div class="pull-left">
 
@@ -149,7 +156,7 @@ $auth = new AuthenticationService();
         </div>    
          <?php if ($rowCount > 0) { ?>
         <div class="table-header" style="min-height: 42px;">           
-
+ Results for "Leads"
 
         </div>
 
@@ -347,6 +354,7 @@ $auth = new AuthenticationService();
 <?php
 $message = '';
 $session->offsetSet('current_website_id', '');
+$session->offsetSet('daterange', '');
 $session->offsetSet('from', '');
 $session->offsetSet('till', '');
 $session->offsetSet('msg', '');

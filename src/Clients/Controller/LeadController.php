@@ -138,7 +138,7 @@ class LeadController extends AbstractActionController {
                 }
             } else {
                 $client_websites = $websiteTable->getWebsiteClients($id);
-
+                $session->offsetSet('daterange', '');
                 foreach ($client_websites as $value) {
                     $current_website_id = $value->id;
                     $current_website_lead = $leadTable->getLeadWebsite($value->id);
