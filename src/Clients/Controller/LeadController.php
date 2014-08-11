@@ -68,7 +68,6 @@ class LeadController extends AbstractActionController {
             } else {
                 $lead->lead_source = 3;
             }
-
             $lead->client_name = $data['client_name'];
             $lead->website = $data['website'];
             $lead->inc_phone = $data['inc_phone'];
@@ -206,7 +205,6 @@ class LeadController extends AbstractActionController {
                 } else {
                     $name = "No Recording";
                 }
-
                 if ($data->lead_source == 1) {
                     $lead_src = "Website-NY";
                 } else if ($data->lead_source == 2) {
@@ -323,7 +321,6 @@ class LeadController extends AbstractActionController {
             }
             $tableGateway = $this->getConnection();
             $leadTable = new LeadTable($tableGateway);
-
 
             $form = new EditLeadForm();
             if ($this->request->isPost()) {

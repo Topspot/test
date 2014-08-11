@@ -35,13 +35,10 @@ class LinkController extends AbstractActionController {
         if ($user = $this->identity()) {
             $id = (int) $this->params()->fromRoute('id', 0);
             $session = new Container('link');
-            $session->offsetSet('link_client_id', $id);
-            
+            $session->offsetSet('link_client_id', $id);            
             //get current user data
             $auth = new AuthenticationService();
             $user_data=$auth->getIdentity();
-
-
             if (!$id) {
                 return $this->redirect()->toRoute(NULL, array(
                             'controller' => 'index',
@@ -70,7 +67,6 @@ class LinkController extends AbstractActionController {
                 }
 //                print_r();
                 if (!empty($current_website_link)) {
-
                     $viewModel = new ViewModel(array(
                         'client_websites' => $websiteTable->getWebsiteClients($id),
                         'message' => $session->offsetGet('msg'),
@@ -79,8 +75,7 @@ class LinkController extends AbstractActionController {
                         'applying_user_rights' => $applying_user_rights
                             
                     ));
-                } else {
-                    
+                } else {                    
                     $viewModel = new ViewModel(array(
                         'client_websites' => $websiteTable->getWebsiteClients($id),
                         'message' => $session->offsetGet('msg'),
@@ -90,7 +85,6 @@ class LinkController extends AbstractActionController {
                     ));
                 }
             } else {
-
                 $client_websites = $websiteTable->getWebsiteClients($id);
                 foreach ($client_websites as $value) {
                     $current_website_id = $value->id;
@@ -105,15 +99,12 @@ class LinkController extends AbstractActionController {
                     'applying_user_rights' => $applying_user_rights
                 ));
             }
-
             return $viewModel;
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
     }
     
-
-
     public function addAction() {
         if ($user = $this->identity()) {
             $id = (int) $this->params()->fromRoute('id', 0);
@@ -131,6 +122,8 @@ class LinkController extends AbstractActionController {
             $form = new AddLinkForm();
             if ($this->request->isPost()) {
 //                print_r("POST");exit;
+//                echo 'done';
+//                 exit_function();
                 $tableGateway = $this->getConnection();
                 $post = $this->request->getPost();
                 $post->website_id = $id;
@@ -140,16 +133,13 @@ class LinkController extends AbstractActionController {
                 $link = new Link();
                 $link->exchangeArray($post);
                 $linkTable = new LinkTable($tableGateway);
-
                 $id = $linkTable->saveLink($link);
-                $session->offsetSet('msg', "Link has been successfully Added.");
+                $session->offsetSet('msg', "Link has been successfully Added.");                 
                 return $this->redirect()->toUrl('/link/index/' . $link_client_id);
             }
-
-
             $viewModel = new ViewModel(array('form' => $form, 'id' => $id,'link_client_id' => $link_client_id));
-//            $viewModel->setTerminal(true);
-            return $viewModel;
+//            $viewModel->setTerminal(true); 
+                        return $viewModel;
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
@@ -158,11 +148,8 @@ class LinkController extends AbstractActionController {
          if ($user = $this->identity()) {
         $num = (int) $this->params()->fromRoute('id', 0);
         $session = new Container('link');
-//                    ini_set("display_errors", "1");
-//            error_reporting(E_ALL & ~E_NOTICE);
 // Create new PHPExcel object
         $objPHPExcel = new PHPExcel();
-
 // Set document properties
         $objPHPExcel->getProperties()->setCreator("Speak Easy Marketing Inc")
                 ->setLastModifiedBy("Maarten Balliauw")
@@ -187,7 +174,6 @@ class LinkController extends AbstractActionController {
         }
 // Rename worksheet
         $objPHPExcel->getActiveSheet()->setTitle('Links');
-
 // Set active sheet index to the first sheet, so Excel opens this as the first sheet
         $objPHPExcel->setActiveSheetIndex(0);
         
@@ -197,7 +183,6 @@ class LinkController extends AbstractActionController {
         header('Cache-Control: max-age=0');
 // If you're serving to IE 9, then the following may be needed
         header('Cache-Control: max-age=1');
-
 // If you're serving to IE over SSL, then the following may be needed
         header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
         header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always modified
@@ -240,15 +225,11 @@ class LinkController extends AbstractActionController {
             }
             $tableGateway = $this->getConnection();
             $linkTable = new LinkTable($tableGateway);
-
-
             $form = new EditLinkForm();
             if ($this->request->isPost()) {
-
                 $post = $this->request->getPost();
                 //saving Client data table
                 $link = $linkTable->getLink($post->id);
-
                 $form->bind($link);
                 $form->setData($post);
                 $originalDate = $post->date;
@@ -257,10 +238,7 @@ class LinkController extends AbstractActionController {
                 $link->date = $post->date;
                 $link->url = $post->url;
                 $session->offsetSet('current_website_id', $link->website_id);
-
                 $linkTable->saveLink($link);
-
-
                 return $this->redirect()->toUrl('/link/index/' . $link_client_id);
             }
             $link = $linkTable->getLink($this->params()->fromRoute('id'));
@@ -295,8 +273,6 @@ class LinkController extends AbstractActionController {
         $linkTable = new LinkTable($tableGateway);
 //        $data=$linkTable->getLink($id);
         $linkTable->deleteLink($id);
-
-
         echo json_encode(array('data' => ''));
         exit();
     }
@@ -304,7 +280,6 @@ class LinkController extends AbstractActionController {
     public function getLinkByIdAction() {
         header('Content-Type: application/json');
         $id = (int) $this->params()->fromRoute('id', 0);
-
         if (!$id) {
             return $this->redirect()->toRoute(NULL, array(
                         'controller' => 'index',
@@ -314,9 +289,7 @@ class LinkController extends AbstractActionController {
         $tableGateway = $this->getConnection();
         $linkTable = new LinkTable($tableGateway);
         $data = $linkTable->getLinkWebsite($id);
-
 //         Debug::dump($value->url);exit;
-
         echo json_encode(array('data' => (array) $data));
         exit();
     }
@@ -351,7 +324,6 @@ class LinkController extends AbstractActionController {
                 $day = rtrim($parts[1], ',');
                 $all_ranges[] = $parts[2] . '-' . $month . '-' . sprintf("%02s", $day);
             }
-
             $session = new Container('link');
             $session->offsetSet('current_website_id', $website_id);
             $session->offsetSet('from', $all_ranges[0]);

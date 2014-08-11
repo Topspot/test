@@ -6,7 +6,7 @@ use Zend\Debug\Debug
                 Create Link
                 
         </h1>
-</div><!-- /.page-header -->
+</div>
 <section class="login">
     <?php if ($this->error): ?>
         <p class="error">
@@ -63,8 +63,25 @@ use Zend\Debug\Debug
                         </a>
         </div>
 </div>
+<!--    <div class="modal-footer">
+            <button class="btn btn-sm" data-dismiss="modal">
+                    <i class="icon-remove"></i>
+                    Cancel
+            </button>
+        <input type="button"  value="Submit" name="submit" id="submitbutton" class="btn btn-sm btn-primary submit" onclick="getHolidayModal('POST', 'add',<?php // echo $id; ?>);"/>
+            <?php 
+//            echo $this->formElement($form->get('submit'));
+//            echo $this->formElementErrors($form->get('submit')); ?>
+               
 
-        <div class="hr hr-24"></div>
+                &nbsp; &nbsp; &nbsp;
+
+            <button class="btn btn-sm btn-primary">
+                    <i class="icon-ok"></i>
+                    Save
+            </button>
+    </div>-->
+        <!--<div class="hr hr-24"></div>-->
     <?php echo $this->form()->closeTag() ?>
 </section>
 
