@@ -100,7 +100,7 @@ $auth = new AuthenticationService();
         <div class="table-header" style="min-height: 42px;">
            
             <?php if (isset($website_data['organic']) && !empty($website_data['organic'])) { ?>
-            <div >Organic Search : <?php echo $website_data['organic']; ?></div>
+            <div style="font-weight: bold;">Search Engine Visitors : <?php echo $website_data['organic']; ?>  <span style="margin-left: 40px;">Website Visits: <?php echo $website_data['total_session']; ?></span></div>
 <?php } ?>
         </div>
        

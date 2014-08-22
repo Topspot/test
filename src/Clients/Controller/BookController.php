@@ -33,7 +33,7 @@ class BookController extends AbstractActionController {
 
     public function indexAction() {
         if ($user = $this->identity()) {
-
+        
             error_reporting(E_ALL);
             ini_set('display_errors', '1');
             //get current user data

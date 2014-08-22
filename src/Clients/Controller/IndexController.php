@@ -61,15 +61,15 @@ class IndexController extends AbstractActionController {
             }
             $session = new Container('link');
             $session->offsetSet('selected_client_id', $id);
-            
+
             $tableGateway = $this->getConnection();
             $clientTable = new ClientTable($tableGateway);
-            $clients=$clientTable->getClient($id);
-            
+            $clients = $clientTable->getClient($id);
+
             $tableGatewayWebsite = $this->getConnectionWebsite();
             $websiteTable = new WebsiteTable($tableGatewayWebsite);
-            $client_websites=$websiteTable->getWebsiteClients($id);
-            
+            $client_websites = $websiteTable->getWebsiteClients($id);
+
             $viewModel = new ViewModel(array(
                 'id' => $id,
                 'clients' => $clients,
@@ -81,7 +81,7 @@ class IndexController extends AbstractActionController {
         }
     }
 
-    public function reportAction() {
+    public function reportAction() {     // full report
         if ($user = $this->identity()) {
             $daterange = $_GET['daterange'];
             $website_id = $_GET['websiteid'];
@@ -135,13 +135,13 @@ class IndexController extends AbstractActionController {
 
 // Add some data
             $cell = 2;
-              $rowCount = count($website_data);
+            $rowCount = count($website_data);
             if ($rowCount > 0) {
-            $objPHPExcel->setActiveSheetIndex(0)
-                    ->setCellValue('A1', 'LINKS');
-            $objPHPExcel->getActiveSheet()->getStyle('A1:B1')->getFont()->setBold(true);
-            
-          
+                $objPHPExcel->setActiveSheetIndex(0)
+                        ->setCellValue('A1', 'LINKS');
+                $objPHPExcel->getActiveSheet()->getStyle('A1:B1')->getFont()->setBold(true);
+
+
                 $objPHPExcel->setActiveSheetIndex(0)
                         ->setCellValue('A' . $cell, 'Date')
                         ->setCellValue('B' . $cell, 'URL');
@@ -265,7 +265,7 @@ class IndexController extends AbstractActionController {
             $session->offsetSet('selected_client_id', '');
             $tableGateway = $this->getConnection();
             $clientTable = new ClientTable($tableGateway);
-            
+
             $tableGatewayWebsite = $this->getConnectionWebsite();
             $websiteTable = new WebsiteTable($tableGatewayWebsite);
             $tableGatewayUserRights = $this->getConnectionUserRights();

@@ -2,7 +2,7 @@
 
 use Zend\Session\Container;
 use Zend\Authentication\AuthenticationService;
-
+date_default_timezone_set('America/New_York');
 $session = new Container('link');
 $daterange = $session->offsetGet('daterange');
 $auth = new AuthenticationService();
@@ -212,7 +212,11 @@ $auth = new AuthenticationService();
                             </td>
 
                             <td>
-                           <?php echo $link->date; ?>
+                           <?php
+                            $originalDate = $link->date;
+                $newDate = date("m-d-Y", strtotime($originalDate));
+                echo $newDate;                          
+                           ?>
                             </td>
                             <td><?php echo $link->url; ?></td>
 

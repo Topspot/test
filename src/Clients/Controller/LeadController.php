@@ -212,9 +212,12 @@ class LeadController extends AbstractActionController {
                 } else {
                     $lead_src = "Book Download";
                 }
+                 $originalDate = $data->lead_date;
+                $lead_date = date("m-d-Y", strtotime($originalDate));
+                
                 $objPHPExcel->setActiveSheetIndex(0)
                         ->setCellValue('A' . $cell, $name)
-                        ->setCellValue('B' . $cell, $data->lead_date)
+                        ->setCellValue('B' . $cell, $lead_date)
                         ->setCellValue('C' . $cell, $lead_src)
                         ->setCellValue('D' . $cell, $data->inc_phone)
                         ->setCellValue('E' . $cell, $data->call_duration)

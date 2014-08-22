@@ -25,7 +25,7 @@ class AddLinkForm extends Form {
             'name' => 'date',
             'attributes' => array(
                 'type' => 'text',
-                'id' => 'datepicker',
+                'id' => 'date',
                 'class' => 'col-xs-10 col-sm-5',
                 'placeholder' => 'Select Date',
             ),

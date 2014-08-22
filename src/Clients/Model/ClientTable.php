@@ -6,7 +6,7 @@ use Zend\Db\Adapter\Adapter;
 use Zend\Db\ResultSet\ResultSet;
 use Zend\Db\TableGateway\TableGateway;
 use Zend\Debug\Debug;
-
+use Zend\Db\Sql\Select;
 
 class ClientTable {
 
@@ -49,6 +49,13 @@ class ClientTable {
     public function fetchAll() {
         $resultSet = $this->tableGateway->select();
          $resultSet->buffer();
+        return $resultSet;
+    }
+    public function ascfetchAll() {
+        $resultSet = $this->tableGateway->select(function (Select $select) {;
+            $select->order('name ASC');
+       });
+//         $resultSet->buffer();
         return $resultSet;
     }
 

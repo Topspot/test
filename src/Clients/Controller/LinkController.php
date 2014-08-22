@@ -65,15 +65,13 @@ class LinkController extends AbstractActionController {
                 } else {
                     $current_website_link = $linkTable->getLinkWebsite($current_website_id);
                 }
-//                print_r();
                 if (!empty($current_website_link)) {
                     $viewModel = new ViewModel(array(
                         'client_websites' => $websiteTable->getWebsiteClients($id),
                         'message' => $session->offsetGet('msg'),
                         'website_data' => $current_website_link,
                         'current_website_id' => $current_website_id,
-                        'applying_user_rights' => $applying_user_rights
-                            
+                        'applying_user_rights' => $applying_user_rights                          
                     ));
                 } else {                    
                     $viewModel = new ViewModel(array(
@@ -111,7 +109,6 @@ class LinkController extends AbstractActionController {
             $session = new Container('link');
             $link_client_id = $session->offsetGet('link_client_id');
             $session->offsetSet('current_website_id', $id);
-
             if (!$id) {
                 return $this->redirect()->toRoute(NULL, array(
 //                        'controller' => 'link',
@@ -121,9 +118,6 @@ class LinkController extends AbstractActionController {
             }
             $form = new AddLinkForm();
             if ($this->request->isPost()) {
-//                print_r("POST");exit;
-//                echo 'done';
-//                 exit_function();
                 $tableGateway = $this->getConnection();
                 $post = $this->request->getPost();
                 $post->website_id = $id;
@@ -162,14 +156,14 @@ class LinkController extends AbstractActionController {
         $objPHPExcel->setActiveSheetIndex(0)
                 ->setCellValue('A1', 'Date')
                 ->setCellValue('B1', 'URL');
-
         $objPHPExcel->getActiveSheet()->getStyle('A1:B1')->getFont()->setBold(true);
         for ($i = 0; $i <= $num; $i++) {
             $data = $session->offsetGet('leadobject' . $i);
             $cell = $i + 2;
-           
+           $originalDate = $data->date;
+                $date = date("m-d-Y", strtotime($originalDate));
             $objPHPExcel->setActiveSheetIndex(0)
-                    ->setCellValue('A' . $cell, $data->date)
+                    ->setCellValue('A' . $cell, $date)
                     ->setCellValue('B' . $cell, $data->url);
         }
 // Rename worksheet
@@ -314,7 +308,6 @@ class LinkController extends AbstractActionController {
         if ($user = $this->identity()) {
             $daterange = $_GET['daterange'];
             $website_id = $_GET['websiteid'];
-
             $ranges = explode('-', $daterange);
             $all_ranges = array();
             foreach ($ranges as $range) {
@@ -343,7 +336,6 @@ class LinkController extends AbstractActionController {
             $website_id = (int) $this->params()->fromRoute('id', 0);
             $session->offsetSet('current_website_id', $website_id);
             $session->offsetSet('msg', "Link has been successfully Deleted.");
-//        print_r($website_id);exit;
             return $this->redirect()->toUrl('/link/index/' . $link_client_id);
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another

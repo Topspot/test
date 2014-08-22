@@ -144,11 +144,20 @@ class TranscriptController extends AbstractActionController {
             for ($i = 0; $i <= $num; $i++) {
                 $data = $session->offsetGet('leadobject' . $i);
                 $cell = $i + 2;
+                 $originalDate = $data->date_posted;
+                $date_posted = date("m-d-Y", strtotime($originalDate));
+                    $originalDate='';
+                 $originalDate = $data->date_received;
+                $date_received = date("m-d-Y", strtotime($originalDate));
+                    $originalDate='';
+                 $originalDate = $data->date_revised;
+                $date_revised = date("m-d-Y", strtotime($originalDate));
+
                 $objPHPExcel->setActiveSheetIndex(0)
                         ->setCellValue('A' . $cell, $data->name)
-                        ->setCellValue('B' . $cell, $data->date_posted)
-                        ->setCellValue('C' . $cell, $data->date_received)
-                        ->setCellValue('D' . $cell, $data->date_revised);
+                        ->setCellValue('B' . $cell, $date_posted)
+                        ->setCellValue('C' . $cell, $date_received)
+                        ->setCellValue('D' . $cell, $date_revised);
             }
 // Rename worksheet
             $objPHPExcel->getActiveSheet()->setTitle('Transcripts');
@@ -278,7 +287,6 @@ class TranscriptController extends AbstractActionController {
                     $transcript = $transcriptTable->getTranscript($post['id']);
                     $form->bind($transcript);
                     $form->setData($post);
-
                     $post['date_posted'] = date("Y-m-d", strtotime($post['date_posted']));
                     $post['date_received'] = date("Y-m-d", strtotime($post['date_received']));
                     $post['date_revised'] = date("Y-m-d", strtotime($post['date_revised']));
@@ -324,7 +332,6 @@ class TranscriptController extends AbstractActionController {
                     }
                 }
             }
-
             // changing date formation
             $transcript->date_posted = date("m/d/Y", strtotime($transcript->date_posted));
             $transcript->date_received = date("m/d/Y", strtotime($transcript->date_received));
@@ -422,7 +429,6 @@ class TranscriptController extends AbstractActionController {
                     }
                 }
             }
-
             header('Content-Description: File Transfer');
             header('Content-Type: application/octet-stream');
             header('Content-Disposition: attachment; filename=transcript.zip');
@@ -436,8 +442,6 @@ class TranscriptController extends AbstractActionController {
             // readfile($file);
             readfile($compressed);
             //        print_r($files);exit;
-
-
             exit;
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
@@ -473,7 +477,6 @@ class TranscriptController extends AbstractActionController {
                 readfile($filename);
                 exit;
             }
-
             return new ViewModel(array());
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
@@ -483,7 +486,6 @@ class TranscriptController extends AbstractActionController {
     public function getTranscriptByIdAction() {
         header('Content-Type: application/json');
         $id = (int) $this->params()->fromRoute('id', 0);
-
         if (!$id) {
             return $this->redirect()->toRoute(NULL, array(
                         'controller' => 'index',

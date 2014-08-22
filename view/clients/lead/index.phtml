@@ -231,7 +231,13 @@ $auth = new AuthenticationService();
                                     echo " ";
                                 }
                                 ?></td>
-                            <td><?php echo $lead->lead_date; ?></td>
+                            <td><?php 
+                            $originalDate = $lead->lead_date;
+                            $newDate = date("m-d-Y", strtotime($originalDate));
+                            echo $newDate;  
+                            
+                            
+                            ?></td>
                             <td><?php
                             if ($lead->lead_source == 1) {
                                 echo "Phone Call";

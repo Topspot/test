@@ -22,7 +22,6 @@ class GoogleapiController extends AbstractActionController {
 
     public function indexAction() {
         if ($user = $this->identity()) {
-
             $id = (int) $this->params()->fromRoute('id', 0);
             $session = new Container('googleapi');
 //            $session->getManager()->getStorage()->clear();
@@ -38,7 +37,6 @@ class GoogleapiController extends AbstractActionController {
             $websiteTable = new WebsiteTable($tableGatewayWebsite);
             //get all client website id
             $client_websites = $websiteTable->getWebsiteClients($id);
-
             //get clinet current website id
             foreach ($client_websites as $value) {
                 $current_website_id = $value->id;
@@ -82,39 +80,46 @@ class GoogleapiController extends AbstractActionController {
             $till = $session->offsetGet('till');
             $website_id = $session->offsetGet('current_website_id');
             $id = $session->offsetGet('id');
-          
             $tableGatewayWebsite = $this->getConnectionWebsite();
             $websiteTable = new WebsiteTable($tableGatewayWebsite);
             $profile_id = $websiteTable->getWebsite($id);
-//;  print_r($profile_id);exit;
+            //;  print_r($profile_id);exit;
             $ga = new gapi('seolawyers2012@gmail.com ', '9382devilx');
             /* We are using the 'source' dimension and the 'visits' metrics */
-            $dimensions = array('landingPagePath');
+            $dimensions = array('pagePath');
             $metrics = array('pageviews');
-
             $ga->requestReportData($profile_id->profile_id, $dimensions, $metrics, '-pageviews', '', $from, $till, 1, 10);
-
             $gaResults = $ga->getResults();
-
             $i = 0;
             $google_api_data = array();
-
             foreach ($gaResults as $result) {
                 $google_api_data[$i]['path'] = $result;
                 $google_api_data[$i]['pageviews'] = $result->getPageviews();
 
                 $i = $i + 1;
             }
-            $dimensions = array('channelGrouping');
+//             to get Organic Search
+            $dimensions = array('medium');
             $metrics = array('sessions');
-            $filter = 'channelGrouping == Organic Search';
-            $ga->requestReportData('66890150', $dimensions, $metrics, '', $filter, $from, $till, 1, 10);
+            $filter = 'medium == organic';
+            $ga->requestReportData($profile_id->profile_id, $dimensions, $metrics, '', $filter, $from, $till, 1, 10);
             $gaResults = $ga->getResults();
-
             $i = 0;
             foreach ($gaResults as $result) {
                 $google_api_data['organic'] = $result->getSessions();
             }
+
+            //to get total session
+
+            $dimensions = array('channelGrouping');
+            $metrics = array('sessions');
+            $ga->requestReportData($profile_id->profile_id, $dimensions, $metrics, '', '', $from, $till, 1, 10);
+            $gaResults = $ga->getResults();
+            $total = 0;
+            foreach ($gaResults as $result) {
+                 $total= $total + $result->getSessions() ;
+            }
+            $google_api_data['total_session']=$total;
             return $google_api_data;
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
@@ -148,9 +153,8 @@ class GoogleapiController extends AbstractActionController {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
     }
-    
-    
-        public function changewebsiteAction() {
+
+    public function changewebsiteAction() {
         if ($user = $this->identity()) {
             $website_id = (int) $this->params()->fromRoute('id', 0);
             $session = new Container('googleapi');
