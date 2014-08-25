@@ -35,10 +35,10 @@ class LinkController extends AbstractActionController {
         if ($user = $this->identity()) {
             $id = (int) $this->params()->fromRoute('id', 0);
             $session = new Container('link');
-            $session->offsetSet('link_client_id', $id);            
+            $session->offsetSet('link_client_id', $id);
             //get current user data
             $auth = new AuthenticationService();
-            $user_data=$auth->getIdentity();
+            $user_data = $auth->getIdentity();
             if (!$id) {
                 return $this->redirect()->toRoute(NULL, array(
                             'controller' => 'index',
@@ -50,50 +50,70 @@ class LinkController extends AbstractActionController {
 
             $tableGateway = $this->getConnection();
             $linkTable = new LinkTable($tableGateway);
-            
+
             $tableGatewayUserRights = $this->getConnectionUserRights();
             $UserRight = new UserRightTable($tableGatewayUserRights);
-             if ($auth->getIdentity()->roles_id == 2) {
-                  $applying_user_rights=$UserRight->getUserRightUser($user_data->usr_id);
-             }else{
-                  $applying_user_rights='';
-             }
+            if ($auth->getIdentity()->roles_id == 2) {
+                $applying_user_rights = $UserRight->getUserRightUser($user_data->usr_id);
+            } else {
+                $applying_user_rights = '';
+            }
+
+            $client_websites = $websiteTable->getWebsiteClients($id);
+            foreach ($client_websites as $value) {
+                $current_website_idd = $value->id;
+                $current_website_linkk = $linkTable->getLinkWebsite($value->id);
+                break;
+            }
+            $session_daterange = new Container('daterange');
+
+
+            if (isset($_GET['cws_id']) && !empty($_GET['cws_id'])) {
+                $cws_id = $_GET['cws_id'];
+                $session->offsetSet('current_website_id', $cws_id);
+            } else {
+                if ($session->offsetGet('check_website_id') == "yes") {
+                    
+                } else {
+                    $session->offsetSet('current_website_id', $current_website_idd);
+                }
+            }
+
+//              print_r($session->offsetGet('current_website_id'));          
             if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
+//                print_r("second");
                 $current_website_id = $session->offsetGet('current_website_id');
-                if ($session->offsetExists('from') && $session->offsetGet('from') != '') {
+                if ($session_daterange->offsetExists('from') && $session_daterange->offsetGet('from') != '') {
                     $current_website_link = $this->setDateRange();
+//                    print_r("inner");
                 } else {
                     $current_website_link = $linkTable->getLinkWebsite($current_website_id);
+//                    print_r("outer");
                 }
                 if (!empty($current_website_link)) {
                     $viewModel = new ViewModel(array(
-                        'client_websites' => $websiteTable->getWebsiteClients($id),
+                        'client_websites' => $client_websites,
                         'message' => $session->offsetGet('msg'),
                         'website_data' => $current_website_link,
                         'current_website_id' => $current_website_id,
-                        'applying_user_rights' => $applying_user_rights                          
+                        'applying_user_rights' => $applying_user_rights
                     ));
-                } else {                    
+                } else {
                     $viewModel = new ViewModel(array(
-                        'client_websites' => $websiteTable->getWebsiteClients($id),
+                        'client_websites' => $client_websites,
                         'message' => $session->offsetGet('msg'),
                         'website_data' => $current_website_link,
                         'current_website_id' => $current_website_id,
-                         'applying_user_rights' => $applying_user_rights
+                        'applying_user_rights' => $applying_user_rights
                     ));
                 }
             } else {
-                $client_websites = $websiteTable->getWebsiteClients($id);
-                foreach ($client_websites as $value) {
-                    $current_website_id = $value->id;
-                    $current_website_link = $linkTable->getLinkWebsite($value->id);
-                    break;
-                }
+//                print_r("first");
                 $session->offsetSet('daterange', '');
                 $viewModel = new ViewModel(array(
                     'client_websites' => $client_websites,
-                    'website_data' => $current_website_link,
-                    'current_website_id' => $current_website_id,
+                    'website_data' => $current_website_linkk,
+                    'current_website_id' => $current_website_idd,
                     'applying_user_rights' => $applying_user_rights
                 ));
             }
@@ -102,7 +122,70 @@ class LinkController extends AbstractActionController {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
     }
-    
+
+    public function setDateRange() {
+        if ($user = $this->identity()) {
+            $session = new Container('link');
+            $session_daterange = new Container('daterange');
+            $from = $session_daterange->offsetGet('from');
+            $till = $session_daterange->offsetGet('till');
+            $website_id = $session->offsetGet('current_website_id');
+            $tableGateway = $this->getConnection();
+            $linkTable = new LinkTable($tableGateway);
+            $website_links_data = $linkTable->dateRange($from, $till, $website_id);
+            return $website_links_data;
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
+    }
+
+    public function daterangeAction() {      // finding daterange data from database
+        if ($user = $this->identity()) {
+            $daterange = $_GET['daterange'];
+            $current_client_id = $_GET['client_id'];
+            $current_website_id = $_GET['current_website_id'];
+//              print_r($website_id);
+            $ranges = explode('-', $daterange);
+            $all_ranges = array();
+            foreach ($ranges as $range) {
+                $range = trim($range);
+                $parts = explode(' ', $range);
+                $month = date("m", strtotime($parts[0]));
+                $day = rtrim($parts[1], ',');
+                $all_ranges[] = $parts[2] . '-' . $month . '-' . sprintf("%02s", $day);
+            }
+            $session = new Container('link');
+            $session->offsetSet('current_website_id', $current_website_id);
+            $session->offsetSet('from', $all_ranges[0]);
+            $session->offsetSet('till', $all_ranges[1]);
+            $session->offsetSet('daterange', $daterange);
+            $session->offsetSet('check_website_id', "yes");
+            $session_daterange = new Container('daterange');
+            $session_daterange->offsetSet('daterange', $daterange);
+            $session_daterange->offsetSet('from', $all_ranges[0]);
+            $session_daterange->offsetSet('till', $all_ranges[1]);
+            $link_client_id = $session->offsetGet('link_client_id');
+            return $this->redirect()->toUrl('/link/index/' . $link_client_id);
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
+    }
+
+    public function changewebsiteAction() {
+        if ($user = $this->identity()) {
+            $website_id = (int) $this->params()->fromRoute('id', 0);
+            $session = new Container('link');
+            $link_client_id = $session->offsetGet('link_client_id');
+            $session->offsetSet('current_website_id', $website_id);
+            $session->offsetSet('check_website_id', "yes");
+            $session->offsetSet('msg', "");
+            return $this->redirect()->toUrl('/link/index/' . $link_client_id . '?cws_id=' . $website_id);
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
+//         print_r($website_id);exit;
+    }
+
     public function addAction() {
         if ($user = $this->identity()) {
             $id = (int) $this->params()->fromRoute('id', 0);
@@ -128,80 +211,69 @@ class LinkController extends AbstractActionController {
                 $link->exchangeArray($post);
                 $linkTable = new LinkTable($tableGateway);
                 $id = $linkTable->saveLink($link);
-                $session->offsetSet('msg', "Link has been successfully Added.");                 
+                $session->offsetSet('msg', "Link has been successfully Added.");
+                $session->offsetSet('check_website_id', "yes");
                 return $this->redirect()->toUrl('/link/index/' . $link_client_id);
             }
-            $viewModel = new ViewModel(array('form' => $form, 'id' => $id,'link_client_id' => $link_client_id));
+            $viewModel = new ViewModel(array('form' => $form, 'id' => $id, 'link_client_id' => $link_client_id));
 //            $viewModel->setTerminal(true); 
-                        return $viewModel;
+            return $viewModel;
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
     }
-     public function exportdataAction() {
-         if ($user = $this->identity()) {
-        $num = (int) $this->params()->fromRoute('id', 0);
-        $session = new Container('link');
-// Create new PHPExcel object
-        $objPHPExcel = new PHPExcel();
-// Set document properties
-        $objPHPExcel->getProperties()->setCreator("Speak Easy Marketing Inc")
-                ->setLastModifiedBy("Maarten Balliauw")
-                ->setTitle("Office 2007 XLSX Test Document")
-                ->setSubject("Office 2007 XLSX Test Document")
-                ->setDescription("Test document for Office 2007 XLSX, generated using PHP classes.")
-                ->setKeywords("office 2007 openxml php")
-                ->setCategory("Test result file");
-// Add some data
-        $objPHPExcel->setActiveSheetIndex(0)
-                ->setCellValue('A1', 'Date')
-                ->setCellValue('B1', 'URL');
-        $objPHPExcel->getActiveSheet()->getStyle('A1:B1')->getFont()->setBold(true);
-        for ($i = 0; $i <= $num; $i++) {
-            $data = $session->offsetGet('leadobject' . $i);
-            $cell = $i + 2;
-           $originalDate = $data->date;
-                $date = date("m-d-Y", strtotime($originalDate));
-            $objPHPExcel->setActiveSheetIndex(0)
-                    ->setCellValue('A' . $cell, $date)
-                    ->setCellValue('B' . $cell, $data->url);
-        }
-// Rename worksheet
-        $objPHPExcel->getActiveSheet()->setTitle('Links');
-// Set active sheet index to the first sheet, so Excel opens this as the first sheet
-        $objPHPExcel->setActiveSheetIndex(0);
-        
-// Redirect output to a clientâ€™s web browser (Excel2007)
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="Links.xlsx"');
-        header('Cache-Control: max-age=0');
-// If you're serving to IE 9, then the following may be needed
-        header('Cache-Control: max-age=1');
-// If you're serving to IE over SSL, then the following may be needed
-        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always modified
-        header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
-        header('Pragma: public'); // HTTP/1.0
 
-        $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        $objWriter->save('php://output');
-        exit;
-         } else {
-            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
-        }
-    }
-    public function changewebsiteAction() {
+    public function exportdataAction() {
         if ($user = $this->identity()) {
-            $website_id = (int) $this->params()->fromRoute('id', 0);
+            $num = (int) $this->params()->fromRoute('id', 0);
             $session = new Container('link');
-            $link_client_id = $session->offsetGet('link_client_id');
-            $session->offsetSet('current_website_id', $website_id);
-            $session->offsetSet('msg', "");
-            return $this->redirect()->toUrl('/link/index/' . $link_client_id);
+// Create new PHPExcel object
+            $objPHPExcel = new PHPExcel();
+// Set document properties
+            $objPHPExcel->getProperties()->setCreator("Speak Easy Marketing Inc")
+                    ->setLastModifiedBy("Maarten Balliauw")
+                    ->setTitle("Office 2007 XLSX Test Document")
+                    ->setSubject("Office 2007 XLSX Test Document")
+                    ->setDescription("Test document for Office 2007 XLSX, generated using PHP classes.")
+                    ->setKeywords("office 2007 openxml php")
+                    ->setCategory("Test result file");
+// Add some data
+            $objPHPExcel->setActiveSheetIndex(0)
+                    ->setCellValue('A1', 'Date')
+                    ->setCellValue('B1', 'URL');
+            $objPHPExcel->getActiveSheet()->getStyle('A1:B1')->getFont()->setBold(true);
+            for ($i = 0; $i <= $num; $i++) {
+                $data = $session->offsetGet('leadobject' . $i);
+                $cell = $i + 2;
+                $originalDate = $data->date;
+                $date = date("m-d-Y", strtotime($originalDate));
+                $objPHPExcel->setActiveSheetIndex(0)
+                        ->setCellValue('A' . $cell, $date)
+                        ->setCellValue('B' . $cell, $data->url);
+            }
+// Rename worksheet
+            $objPHPExcel->getActiveSheet()->setTitle('Links');
+// Set active sheet index to the first sheet, so Excel opens this as the first sheet
+            $objPHPExcel->setActiveSheetIndex(0);
+
+// Redirect output to a clientâ€™s web browser (Excel2007)
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment;filename="Links.xlsx"');
+            header('Cache-Control: max-age=0');
+// If you're serving to IE 9, then the following may be needed
+            header('Cache-Control: max-age=1');
+// If you're serving to IE over SSL, then the following may be needed
+            header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+            header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always modified
+            header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+            header('Pragma: public'); // HTTP/1.0
+
+            $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+            $objWriter->save('php://output');
+            exit;
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
-//         print_r($website_id);exit;
     }
 
     public function editAction() {
@@ -232,6 +304,7 @@ class LinkController extends AbstractActionController {
                 $link->date = $post->date;
                 $link->url = $post->url;
                 $session->offsetSet('current_website_id', $link->website_id);
+                $session->offsetSet('check_website_id', "yes");
                 $linkTable->saveLink($link);
                 return $this->redirect()->toUrl('/link/index/' . $link_client_id);
             }
@@ -288,47 +361,6 @@ class LinkController extends AbstractActionController {
         exit();
     }
 
-    public function setDateRange() {
-        if ($user = $this->identity()) {
-            $session = new Container('link');
-            $from = $session->offsetGet('from');
-            $till = $session->offsetGet('till');
-            $website_id = $session->offsetGet('current_website_id');
-
-            $tableGateway = $this->getConnection();
-            $linkTable = new LinkTable($tableGateway);
-            $website_links_data = $linkTable->dateRange($from, $till, $website_id);
-            return $website_links_data;
-        } else {
-            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
-        }
-    }
-
-    public function daterangeAction() {      // finding daterange data from database
-        if ($user = $this->identity()) {
-            $daterange = $_GET['daterange'];
-            $website_id = $_GET['websiteid'];
-            $ranges = explode('-', $daterange);
-            $all_ranges = array();
-            foreach ($ranges as $range) {
-                $range = trim($range);
-                $parts = explode(' ', $range);
-                $month = date("m", strtotime($parts[0]));
-                $day = rtrim($parts[1], ',');
-                $all_ranges[] = $parts[2] . '-' . $month . '-' . sprintf("%02s", $day);
-            }
-            $session = new Container('link');
-            $session->offsetSet('current_website_id', $website_id);
-            $session->offsetSet('from', $all_ranges[0]);
-            $session->offsetSet('till', $all_ranges[1]);
-            $session->offsetSet('daterange', $daterange);
-            $link_client_id = $session->offsetGet('link_client_id');
-            return $this->redirect()->toUrl('/link/index/' . $link_client_id);
-        } else {
-            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
-        }
-    }
-
     public function setmessageAction() {  // set message for delete client link
         if ($user = $this->identity()) {
             $session = new Container('link');
@@ -336,6 +368,7 @@ class LinkController extends AbstractActionController {
             $website_id = (int) $this->params()->fromRoute('id', 0);
             $session->offsetSet('current_website_id', $website_id);
             $session->offsetSet('msg', "Link has been successfully Deleted.");
+            $session->offsetSet('check_website_id', "yes");
             return $this->redirect()->toUrl('/link/index/' . $link_client_id);
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
@@ -361,6 +394,7 @@ class LinkController extends AbstractActionController {
         $tableGateway = new \Zend\Db\TableGateway\TableGateway('websites', $dbAdapter, null, $resultSetPrototype);
         return $tableGateway;
     }
+
     public function getConnectionUserRights() {        // set connection to User Rights table
         $sm = $this->getServiceLocator();
         $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');

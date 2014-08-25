@@ -108,9 +108,31 @@ class LeadController extends AbstractActionController {
                 $applying_user_rights = '';
             }
 
+            $client_websites = $websiteTable->getWebsiteClients($id);
+            foreach ($client_websites as $value) {
+                $current_website_idd = $value->id;
+                $current_website_leadd = $leadTable->getLeadWebsite($value->id);
+                break;
+            }
+
+            $session_daterange = new Container('daterange');
+
+            if (isset($_GET['cws_id']) && !empty($_GET['cws_id'])) {
+                $cws_id = $_GET['cws_id'];
+                $session->offsetSet('current_website_id', $cws_id);
+            } else {
+                if ($session->offsetGet('check_website_id') == "yes") {
+                    
+                } else {
+                    $session->offsetSet('current_website_id', $current_website_idd);
+                }
+            }
+
+            
+            
             if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
                 $current_website_id = $session->offsetGet('current_website_id');
-                if ($session->offsetExists('from') && $session->offsetGet('from') != '') {
+                if ($session_daterange->offsetExists('from') && $session_daterange->offsetGet('from') != '') {
 
                     $current_website_lead = $this->setDateRange();
                 } else {
@@ -119,7 +141,7 @@ class LeadController extends AbstractActionController {
                 if (!empty($current_website_lead)) {
 
                     $viewModel = new ViewModel(array(
-                        'client_websites' => $websiteTable->getWebsiteClients($id),
+                        'client_websites' => $client_websites,
                         'message' => $session->offsetGet('msg'),
                         'website_data' => $current_website_lead,
                         'current_website_id' => $current_website_id,
@@ -128,7 +150,7 @@ class LeadController extends AbstractActionController {
                 } else {
 
                     $viewModel = new ViewModel(array(
-                        'client_websites' => $websiteTable->getWebsiteClients($id),
+                        'client_websites' => $client_websites,
                         'message' => $session->offsetGet('msg'),
                         'website_data' => $current_website_lead,
                         'current_website_id' => $current_website_id,
@@ -136,22 +158,81 @@ class LeadController extends AbstractActionController {
                     ));
                 }
             } else {
-                $client_websites = $websiteTable->getWebsiteClients($id);
-                $session->offsetSet('daterange', '');
-                foreach ($client_websites as $value) {
-                    $current_website_id = $value->id;
-                    $current_website_lead = $leadTable->getLeadWebsite($value->id);
-                    break;
-                }
 
+                $session->offsetSet('daterange', '');
                 $viewModel = new ViewModel(array(
                     'client_websites' => $client_websites,
-                    'website_data' => $current_website_lead,
-                    'current_website_id' => $current_website_id,
+                    'website_data' => $current_website_leadd,
+                    'current_website_id' => $current_website_idd,
                     'applying_user_rights' => $applying_user_rights
                 ));
             }
             return $viewModel;
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
+    }
+
+    public function setDateRange() {
+        if ($user = $this->identity()) {
+            $session = new Container('lead');
+            $session_daterange = new Container('daterange');
+            $from = $session_daterange->offsetGet('from');
+            $till = $session_daterange->offsetGet('till');
+            $website_id = $session->offsetGet('current_website_id');
+            $tableGateway = $this->getConnection();
+            $leadTable = new LeadTable($tableGateway);
+            $website_leads_data = $leadTable->dateRange($from, $till, $website_id);
+//        print_r($website_leads_data);exit;
+            return $website_leads_data;
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
+    }
+
+    public function daterangeAction() {      // finding daterange data from database
+        if ($user = $this->identity()) {
+            $daterange = $_GET['daterange'];
+             $current_client_id = $_GET['client_id'];
+            $current_website_id = $_GET['current_website_id'];
+
+            $ranges = explode('-', $daterange);
+            $all_ranges = array();
+            foreach ($ranges as $range) {
+                $range = trim($range);
+                $parts = explode(' ', $range);
+                $month = date("m", strtotime($parts[0]));
+                $day = rtrim($parts[1], ',');
+                $all_ranges[] = $parts[2] . '-' . $month . '-' . sprintf("%02s", $day);
+            }
+
+            $session = new Container('lead');
+            $session->offsetSet('current_website_id', $current_website_id);
+            $session->offsetSet('from', $all_ranges[0]);
+            $session->offsetSet('till', $all_ranges[1]);
+            $session->offsetSet('daterange', $daterange);
+            $session->offsetSet('check_website_id', "yes");
+            $session_daterange = new Container('daterange');
+            $session_daterange->offsetSet('daterange', $daterange);
+            $session_daterange->offsetSet('from', $all_ranges[0]);
+            $session_daterange->offsetSet('till', $all_ranges[1]);
+            $lead_client_id = $session->offsetGet('lead_client_id');
+            return $this->redirect()->toUrl('/lead/index/' . $lead_client_id);
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
+    }
+
+    public function setmessageAction() {  // set message for delete client lead
+        if ($user = $this->identity()) {
+            $session = new Container('lead');
+            $lead_client_id = $session->offsetGet('lead_client_id');
+            $website_id = (int) $this->params()->fromRoute('id', 0);
+            $session->offsetSet('current_website_id', $website_id);
+            $session->offsetSet('check_website_id', "yes");
+            $session->offsetSet('msg', "Lead has been successfully Deleted.");
+//        print_r($website_id);exit;
+            return $this->redirect()->toUrl('/lead/index/' . $lead_client_id);
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
@@ -212,9 +293,9 @@ class LeadController extends AbstractActionController {
                 } else {
                     $lead_src = "Book Download";
                 }
-                 $originalDate = $data->lead_date;
+                $originalDate = $data->lead_date;
                 $lead_date = date("m-d-Y", strtotime($originalDate));
-                
+
                 $objPHPExcel->setActiveSheetIndex(0)
                         ->setCellValue('A' . $cell, $name)
                         ->setCellValue('B' . $cell, $lead_date)
@@ -282,6 +363,7 @@ class LeadController extends AbstractActionController {
                 $leadTable = new LeadTable($tableGateway);
 
                 $id = $leadTable->saveLead($lead);
+                $session->offsetSet('check_website_id', "yes");
                 $session->offsetSet('msg', "Lead has been successfully Added.");
                 return $this->redirect()->toUrl('/lead/index/' . $lead_client_id);
             }
@@ -301,7 +383,8 @@ class LeadController extends AbstractActionController {
             $lead_client_id = $session->offsetGet('lead_client_id');
             $session->offsetSet('current_website_id', $website_id);
             $session->offsetSet('msg', "");
-            return $this->redirect()->toUrl('/lead/index/' . $lead_client_id);
+            $session->offsetSet('check_website_id', "yes");
+            return $this->redirect()->toUrl('/lead/index/' . $lead_client_id. '?cws_id=' . $website_id);
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
@@ -315,7 +398,7 @@ class LeadController extends AbstractActionController {
             $session = new Container('lead');
             $lead_client_id = $session->offsetGet('lead_client_id');
 //        $session->offsetSet('current_website_id', $id);
-            $session->offsetSet('msg', "Lead has been successfully Updated.");
+           
             if (!$id) {
                 return $this->redirect()->toRoute(NULL, array(
                             'controller' => 'index',
@@ -348,9 +431,10 @@ class LeadController extends AbstractActionController {
                 $lead->caller_type = $post->caller_type;
                 $lead->lead_name = $post->lead_name;
                 $lead->lead_email = $post->lead_email;
-                
+                $session->offsetSet('check_website_id', "yes");
                 $session->offsetSet('current_website_id', $lead->website_id);
                 $leadTable->saveLead($lead);
+                 $session->offsetSet('msg', "Lead has been successfully Updated.");
                 return $this->redirect()->toUrl('/lead/index/' . $lead_client_id);
             }
             $lead = $leadTable->getLead($this->params()->fromRoute('id'));
@@ -359,7 +443,7 @@ class LeadController extends AbstractActionController {
             $lead->date = $newDate;
 //            print_r($lead);exit;
             $form->bind($lead); //biding data to form
-            
+
             $viewModel = new ViewModel(array(
                 'form' => $form,
                 'id' => $this->params()->fromRoute('id'),
@@ -405,63 +489,6 @@ class LeadController extends AbstractActionController {
         $data = $leadTable->getLeadWebsite($id);
         echo json_encode(array('data' => (array) $data));
         exit();
-    }
-
-    public function setDateRange() {
-        if ($user = $this->identity()) {
-            $session = new Container('lead');
-            $from = $session->offsetGet('from');
-            $till = $session->offsetGet('till');
-            $website_id = $session->offsetGet('current_website_id');
-            $tableGateway = $this->getConnection();
-            $leadTable = new LeadTable($tableGateway);
-            $website_leads_data = $leadTable->dateRange($from, $till, $website_id);
-//        print_r($website_leads_data);exit;
-            return $website_leads_data;
-        } else {
-            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
-        }
-    }
-
-    public function daterangeAction() {      // finding daterange data from database
-        if ($user = $this->identity()) {
-            $daterange = $_GET['daterange'];
-            $website_id = $_GET['websiteid'];
-
-            $ranges = explode('-', $daterange);
-            $all_ranges = array();
-            foreach ($ranges as $range) {
-                $range = trim($range);
-                $parts = explode(' ', $range);
-                $month = date("m", strtotime($parts[0]));
-                $day = rtrim($parts[1], ',');
-                $all_ranges[] = $parts[2] . '-' . $month . '-' . sprintf("%02s", $day);
-            }
-
-            $session = new Container('lead');
-            $session->offsetSet('current_website_id', $website_id);
-            $session->offsetSet('from', $all_ranges[0]);
-            $session->offsetSet('till', $all_ranges[1]);
-            $session->offsetSet('daterange', $daterange);
-            $lead_client_id = $session->offsetGet('lead_client_id');
-            return $this->redirect()->toUrl('/lead/index/' . $lead_client_id);
-        } else {
-            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
-        }
-    }
-
-    public function setmessageAction() {  // set message for delete client lead
-        if ($user = $this->identity()) {
-            $session = new Container('lead');
-            $lead_client_id = $session->offsetGet('lead_client_id');
-            $website_id = (int) $this->params()->fromRoute('id', 0);
-            $session->offsetSet('current_website_id', $website_id);
-            $session->offsetSet('msg', "Lead has been successfully Deleted.");
-//        print_r($website_id);exit;
-            return $this->redirect()->toUrl('/lead/index/' . $lead_client_id);
-        } else {
-            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
-        }
     }
 
     public function getConnection() {

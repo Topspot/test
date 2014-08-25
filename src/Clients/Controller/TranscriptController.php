@@ -55,27 +55,47 @@ class TranscriptController extends AbstractActionController {
 
             $tableGatewayUserRights = $this->getConnectionUserRights();
             $UserRight = new UserRightTable($tableGatewayUserRights);
-//                        error_reporting(E_ALL);
-//            ini_set('display_errors', '1');
             if ($auth->getIdentity()->roles_id == 2) {
                 $applying_user_rights = $UserRight->getUserRightUser($user_data->usr_id);
             } else {
                 $applying_user_rights = '';
             }
+            $client_websites = $websiteTable->getWebsiteClients($id);
+
+            foreach ($client_websites as $value) {
+                $current_website_idd = $value->id;
+                $current_website_transcriptt = $transcriptTable->getTranscriptWebsite($value->id);
+                break;
+            }
+
+            $session_daterange = new Container('daterange');
+            if (isset($_GET['cws_id']) && !empty($_GET['cws_id'])) {
+                $cws_id = $_GET['cws_id'];
+                $session->offsetSet('current_website_id', $cws_id);
+            } else {
+                if ($session->offsetGet('check_website_id') == "yes") {
+                    
+                } else {
+                    $session->offsetSet('current_website_id', $current_website_idd);
+                }
+            }
+//              print_r("set surrent website id".$current_website_idd);
+//            print_r($session->offsetGet('current_website_id'));
             if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
+//                  print_r("second");
                 $current_website_id = $session->offsetGet('current_website_id');
-                if ($session->offsetExists('from') && $session->offsetGet('from') != '') {
+                if ($session_daterange->offsetExists('from') && $session_daterange->offsetGet('from') != '') {
                     $current_website_transcript = $this->setDateRange();
+//                     print_r("inner");
 //                print_r($current_website_transcript);exit;
                 } else {
                     $current_website_transcript = $transcriptTable->getTranscriptWebsite($current_website_id);
+//                      print_r("outer");
                 }
-
-
                 if (!empty($current_website_transcript)) {
 
                     $viewModel = new ViewModel(array(
-                        'client_websites' => $websiteTable->getWebsiteClients($id),
+                        'client_websites' => $client_websites,
                         'message' => $session->offsetGet('msg'),
                         'website_data' => $current_website_transcript,
                         'current_website_id' => $current_website_id,
@@ -83,7 +103,7 @@ class TranscriptController extends AbstractActionController {
                     ));
                 } else {
                     $viewModel = new ViewModel(array(
-                        'client_websites' => $websiteTable->getWebsiteClients($id),
+                        'client_websites' => $client_websites,
                         'message' => $session->offsetGet('msg'),
                         'website_data' => $current_website_transcript,
                         'current_website_id' => $current_website_id,
@@ -91,21 +111,11 @@ class TranscriptController extends AbstractActionController {
                     ));
                 }
             } else {
-
-                $client_websites = $websiteTable->getWebsiteClients($id);
-//           print_r($client_websites);
-                foreach ($client_websites as $value) {
-//                  print_r($value);exit;
-                    $current_website_id = $value->id;
-
-                    $current_website_transcript = $transcriptTable->getTranscriptWebsite($value->id);
-                    break;
-                }
                 $session->offsetSet('daterange', '');
                 $viewModel = new ViewModel(array(
                     'client_websites' => $client_websites,
-                    'website_data' => $current_website_transcript,
-                    'current_website_id' => $current_website_id,
+                    'website_data' => $current_website_transcriptt,
+                    'current_website_id' => $current_website_idd,
                     'applying_user_rights' => $applying_user_rights
                 ));
             }
@@ -116,13 +126,76 @@ class TranscriptController extends AbstractActionController {
         }
     }
 
+    public function setDateRange() {
+        if ($user = $this->identity()) {
+            $session = new Container('transcript');
+            $session_daterange = new Container('daterange');
+            $from = $session_daterange->offsetGet('from');
+            $till = $session_daterange->offsetGet('till');
+            $website_id = $session->offsetGet('current_website_id');
+            $from = $from . ' 00:00:00';
+            $till = $till . ' 23:59:59';
+            $tableGateway = $this->getConnection();
+            $transcriptTable = new TranscriptTable($tableGateway);
+            $website_transcripts_data = $transcriptTable->dateRange($from, $till, $website_id);
+            return $website_transcripts_data;
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
+    }
+
+    public function daterangeAction() {      // finding daterange data from database
+        if ($user = $this->identity()) {
+            $daterange = $_GET['daterange'];
+            $current_client_id = $_GET['client_id'];
+            $current_website_id = $_GET['current_website_id'];
+
+            $ranges = explode('-', $daterange);
+            $all_ranges = array();
+            foreach ($ranges as $range) {
+                $range = trim($range);
+                $parts = explode(' ', $range);
+                $month = date("m", strtotime($parts[0]));
+                $day = rtrim($parts[1], ',');
+                $all_ranges[] = $parts[2] . '-' . $month . '-' . sprintf("%02s", $day);
+            }
+            $session = new Container('transcript');
+            $session->offsetSet('current_website_id', $current_website_id);
+            $session->offsetSet('from', $all_ranges[0]);
+            $session->offsetSet('till', $all_ranges[1]);
+            $session->offsetSet('daterange', $daterange);
+            $session->offsetSet('check_website_id', "yes");
+            $session_daterange = new Container('daterange');
+            $session_daterange->offsetSet('daterange', $daterange);
+            $session_daterange->offsetSet('from', $all_ranges[0]);
+            $session_daterange->offsetSet('till', $all_ranges[1]);
+            $transcript_client_id = $session->offsetGet('transcript_client_id');
+            return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id);
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
+    }
+
+    public function setmessageAction() {  // set message for delete client transcript
+        if ($user = $this->identity()) {
+            $session = new Container('transcript');
+            $transcript_client_id = $session->offsetGet('transcript_client_id');
+            $website_id = (int) $this->params()->fromRoute('id', 0);
+            $session->offsetSet('current_website_id', $website_id);
+            $session->offsetSet('msg', "Transcript has been successfully Deleted.");
+            $session->offsetSet('check_website_id', "yes");
+//        print_r($website_id);exit;
+            return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id);
+        } else {
+            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
+        }
+    }
+
     public function exportdataAction() {
         if ($user = $this->identity()) {
             $num = (int) $this->params()->fromRoute('id', 0);
 
             $session = new Container('transcript');
-//                    ini_set("display_errors", "1");
-//            error_reporting(E_ALL & ~E_NOTICE);
 // Create new PHPExcel object
             $objPHPExcel = new PHPExcel();
 // Set document properties
@@ -144,13 +217,13 @@ class TranscriptController extends AbstractActionController {
             for ($i = 0; $i <= $num; $i++) {
                 $data = $session->offsetGet('leadobject' . $i);
                 $cell = $i + 2;
-                 $originalDate = $data->date_posted;
+                $originalDate = $data->date_posted;
                 $date_posted = date("m-d-Y", strtotime($originalDate));
-                    $originalDate='';
-                 $originalDate = $data->date_received;
+                $originalDate = '';
+                $originalDate = $data->date_received;
                 $date_received = date("m-d-Y", strtotime($originalDate));
-                    $originalDate='';
-                 $originalDate = $data->date_revised;
+                $originalDate = '';
+                $originalDate = $data->date_revised;
                 $date_revised = date("m-d-Y", strtotime($originalDate));
 
                 $objPHPExcel->setActiveSheetIndex(0)
@@ -213,11 +286,10 @@ class TranscriptController extends AbstractActionController {
                 $uploadPath = getcwd() . '/module/Clients/data/uploads//' . $id;
                 print_r($uploadPath);
                 if (!file_exists($uploadPath)) {
-                    mkdir($uploadPath, 0777, true);//                    
+                    mkdir($uploadPath, 0777, true); //                    
                 }
                 $adapter->setDestination($uploadPath);
                 if ($adapter->receive($uploadFile['name'])) {
-
                     $post['website_id'] = $id;
                     $post['date_posted'] = date("Y-m-d", strtotime($post['date_posted']));
                     $post['date_received'] = date("Y-m-d", strtotime($post['date_received']));
@@ -225,21 +297,19 @@ class TranscriptController extends AbstractActionController {
 
                     $transcript = new Transcript();
                     $transcript->exchangeArray($post);
-//             print_r($transcript);exit;
                     $tableGateway = $this->getConnection();
                     $transcriptTable = new TranscriptTable($tableGateway);
 
                     $id = $transcriptTable->saveTranscript($transcript);
                     $session->offsetSet('msg', "Transcript has been successfully Added.");
+                    $session->offsetSet('check_website_id', "yes");
                     return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id);
                 } else {
                     print_r("Could not get file in uploads folder");
                     exit();
                 }
             }
-//        print($form);exit;
-
-            $viewModel = new ViewModel(array('form' => $form, 'id' => $id ,'transcript_client_id' => $transcript_client_id));
+            $viewModel = new ViewModel(array('form' => $form, 'id' => $id, 'transcript_client_id' => $transcript_client_id));
             return $viewModel;
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
@@ -253,7 +323,8 @@ class TranscriptController extends AbstractActionController {
             $transcript_client_id = $session->offsetGet('transcript_client_id');
             $session->offsetSet('current_website_id', $website_id);
             $session->offsetSet('msg', "");
-            return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id);
+            $session->offsetSet('check_website_id', "yes");
+            return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id. '?cws_id=' . $website_id);
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }
@@ -324,6 +395,7 @@ class TranscriptController extends AbstractActionController {
                         $transcript->name = $post['name'];
                         $transcript->fileupload = $post['fileupload'];
                         $session->offsetSet('current_website_id', $transcript->website_id);
+                        $session->offsetSet('check_website_id', "yes");
                         $transcriptTable->saveTranscript($transcript);    // updating the data
                         return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id);
                     } else {
@@ -365,8 +437,8 @@ class TranscriptController extends AbstractActionController {
         $tableGateway = $this->getConnection();
         $transcriptTable = new TranscriptTable($tableGateway);
         $data = $transcriptTable->getTranscript($id);
-         ini_set("display_errors", "1");
-         error_reporting(E_ALL & ~E_NOTICE);
+        ini_set("display_errors", "1");
+        error_reporting(E_ALL & ~E_NOTICE);
         $filename = getcwd() . '/module/Clients/data/uploads//' . $current_website_id . '//' . $data->fileupload;
 //        print_r($filename);exit;
         unlink($filename);        // delete the old uploaded files
@@ -385,7 +457,6 @@ class TranscriptController extends AbstractActionController {
             }
             $tableGateway = $this->getConnection();
             $transcriptTable = new TranscriptTable($tableGateway);
-
             if (!file_exists(getcwd() . '/module/Clients/data/uploads/temp')) {
                 mkdir(getcwd() . '/module/Clients/data/uploads/temp', 0777, true);
             }
@@ -393,17 +464,13 @@ class TranscriptController extends AbstractActionController {
                 $download_ids = explode(",", $download_ids);
                 foreach ($download_ids as $ids) {
                     $single_data = $transcriptTable->getTranscript($ids);
-
                     $filename = getcwd() . '/module/Clients/data/uploads//' . $current_website_id . '//' . $single_data->fileupload;
                     $filename1 = getcwd() . '/module/Clients/data/uploads/temp//' . $single_data->fileupload;
                     copy($filename, $filename1);
                 }
             } else {
-
                 $data = $transcriptTable->getTranscriptWebsite($current_website_id);
-               
                 foreach ($data as $value) {
-                    
                     $filename = getcwd() . '/module/Clients/data/uploads//' . $current_website_id . '//' . $value->fileupload;
                     $filename1 = getcwd() . '/module/Clients/data/uploads/temp//' . $value->fileupload;
                     copy($filename, $filename1);
@@ -453,7 +520,6 @@ class TranscriptController extends AbstractActionController {
             $id = (int) $this->params()->fromRoute('id', 0);
             $session = new Container('transcript');
             $current_website_id = $session->offsetGet('transcript_website_id');
-//         print_r($current_website_id);exit();
             if (!$id) {
                 print_r("Cant get id in download action");
                 exit();
@@ -495,68 +561,8 @@ class TranscriptController extends AbstractActionController {
         $tableGateway = $this->getConnection();
         $transcriptTable = new TranscriptTable($tableGateway);
         $data = $transcriptTable->getTranscriptWebsite($id);
-
-//         Debug::dump($value->url);exit;
-
         echo json_encode(array('data' => (array) $data));
         exit();
-    }
-
-    public function setDateRange() {
-        if ($user = $this->identity()) {
-            $session = new Container('transcript');
-            $from = $session->offsetGet('from');
-            $till = $session->offsetGet('till');
-            $website_id = $session->offsetGet('current_website_id');
-            $from = $from . ' 00:00:00';
-            $till = $till . ' 23:59:59';
-            $tableGateway = $this->getConnection();
-            $transcriptTable = new TranscriptTable($tableGateway);
-            $website_transcripts_data = $transcriptTable->dateRange($from, $till, $website_id);
-            return $website_transcripts_data;
-        } else {
-            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
-        }
-    }
-
-    public function daterangeAction() {      // finding daterange data from database
-        if ($user = $this->identity()) {
-            $daterange = $_GET['daterange'];
-            $website_id = $_GET['websiteid'];
-
-            $ranges = explode('-', $daterange);
-            $all_ranges = array();
-            foreach ($ranges as $range) {
-                $range = trim($range);
-                $parts = explode(' ', $range);
-                $month = date("m", strtotime($parts[0]));
-                $day = rtrim($parts[1], ',');
-                $all_ranges[] = $parts[2] . '-' . $month . '-' . sprintf("%02s", $day);
-            }
-            $session = new Container('transcript');
-            $session->offsetSet('current_website_id', $website_id);
-            $session->offsetSet('from', $all_ranges[0]);
-            $session->offsetSet('till', $all_ranges[1]);
-            $session->offsetSet('daterange', $daterange);
-            $transcript_client_id = $session->offsetGet('transcript_client_id');
-            return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id);
-        } else {
-            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
-        }
-    }
-
-    public function setmessageAction() {  // set message for delete client transcript
-        if ($user = $this->identity()) {
-            $session = new Container('transcript');
-            $transcript_client_id = $session->offsetGet('transcript_client_id');
-            $website_id = (int) $this->params()->fromRoute('id', 0);
-            $session->offsetSet('current_website_id', $website_id);
-            $session->offsetSet('msg', "Transcript has been successfully Deleted.");
-//        print_r($website_id);exit;
-            return $this->redirect()->toUrl('/transcript/index/' . $transcript_client_id);
-        } else {
-            return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
-        }
     }
 
     public function getConnection() {           // set connection to transcript table

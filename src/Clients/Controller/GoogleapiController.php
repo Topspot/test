@@ -26,8 +26,8 @@ class GoogleapiController extends AbstractActionController {
             $session = new Container('googleapi');
 //            $session->getManager()->getStorage()->clear();
             $session->offsetSet('googleapi_client_id', $id);
-            error_reporting(E_ALL);
-            ini_set('display_errors', '1');
+//            error_reporting(E_ALL);
+//            ini_set('display_errors', '1');
             if ($id == 0) {
                 print_r("Cant find Client ID");
                 exit;
@@ -39,19 +39,36 @@ class GoogleapiController extends AbstractActionController {
             $client_websites = $websiteTable->getWebsiteClients($id);
             //get clinet current website id
             foreach ($client_websites as $value) {
-                $current_website_id = $value->id;
+                $current_website_idd = $value->id;
                 break;
+            }
+//            if (!$session->offsetExists('current_website_id') && !$session->offsetGet('current_website_id') != '') {
+//                $session->offsetSet('current_website_id', $current_website_id);
+//            }
+            $session_daterange = new Container('daterange');
+            
+            if (isset($_GET['cws_id']) && !empty($_GET['cws_id'])) {
+                $cws_id = $_GET['cws_id'];
+                $session->offsetSet('current_website_id', $cws_id);
+            } else {
+                if ($session->offsetGet('check_website_id') == "yes") {
+                    
+                } else {
+                    $session->offsetSet('current_website_id', $current_website_idd);
+                }
             }
             //check if current websute id session is avilable
             if ($session->offsetExists('current_website_id') && $session->offsetGet('current_website_id') != '') {
+//                print_r("second");
                 $current_website_id = $session->offsetGet('current_website_id');
                 //if date range is selected
-                if ($session->offsetExists('from') && $session->offsetGet('from') != '') {
-//                    echo "google api function";exit;
+                if ($session_daterange->offsetExists('from') && $session_daterange->offsetGet('from') != '') {
+//                    print_r("inner");
                     $current_website_googleapi = array();
                     $current_website_googleapi = $this->getGoogleApi();
                 } else {
                     $current_website_googleapi = '';
+//                    print_r("outer");
                 }
                 $viewModel = new ViewModel(array(
                     'client_websites' => $client_websites,
@@ -59,10 +76,11 @@ class GoogleapiController extends AbstractActionController {
                     'website_data' => $current_website_googleapi,
                 ));
             } else {
+//                print_r("first");
                 $session->offsetSet('daterange', '');
                 $viewModel = new ViewModel(array(
                     'client_websites' => $client_websites,
-                    'current_website_id' => $current_website_id,
+                    'current_website_id' => $current_website_idd,
                 ));
             }
             return $viewModel;
@@ -76,13 +94,14 @@ class GoogleapiController extends AbstractActionController {
 //             error_reporting(E_ALL);
 //            ini_set('display_errors', '1');
             $session = new Container('googleapi');
-            $from = $session->offsetGet('from');
-            $till = $session->offsetGet('till');
-            $website_id = $session->offsetGet('current_website_id');
-            $id = $session->offsetGet('id');
+            $session_daterange = new Container('daterange');
+            $from = $session_daterange->offsetGet('from');
+            $till = $session_daterange->offsetGet('till');
+            $current_client_id = $session->offsetGet('client_id');
+            $current_website_id = $session->offsetGet('current_website_id');
             $tableGatewayWebsite = $this->getConnectionWebsite();
             $websiteTable = new WebsiteTable($tableGatewayWebsite);
-            $profile_id = $websiteTable->getWebsite($id);
+            $profile_id = $websiteTable->getWebsite($current_website_id);
             //;  print_r($profile_id);exit;
             $ga = new gapi('seolawyers2012@gmail.com ', '9382devilx');
             /* We are using the 'source' dimension and the 'visits' metrics */
@@ -117,9 +136,9 @@ class GoogleapiController extends AbstractActionController {
             $gaResults = $ga->getResults();
             $total = 0;
             foreach ($gaResults as $result) {
-                 $total= $total + $result->getSessions() ;
+                $total = $total + $result->getSessions();
             }
-            $google_api_data['total_session']=$total;
+            $google_api_data['total_session'] = $total;
             return $google_api_data;
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
@@ -129,7 +148,8 @@ class GoogleapiController extends AbstractActionController {
     public function daterangeAction() {      // finding daterange data from database
         if ($user = $this->identity()) {
             $daterange = $_GET['daterange'];
-            $website_id = $_GET['websiteid'];
+            $current_client_id = $_GET['client_id'];
+            $current_website_id = $_GET['current_website_id'];
             $id = $_GET['id'];
 
             $ranges = explode('-', $daterange);
@@ -142,11 +162,16 @@ class GoogleapiController extends AbstractActionController {
                 $all_ranges[] = $parts[2] . '-' . $month . '-' . sprintf("%02s", $day);
             }
             $session = new Container('googleapi');
-            $session->offsetSet('current_website_id', $website_id);
+            $session->offsetSet('current_website_id', $current_website_id);
             $session->offsetSet('id', $id);
             $session->offsetSet('from', $all_ranges[0]);
             $session->offsetSet('till', $all_ranges[1]);
             $session->offsetSet('daterange', $daterange);
+            $session->offsetSet('check_website_id', "yes");
+            $session_daterange = new Container('daterange');
+            $session_daterange->offsetSet('daterange', $daterange);
+            $session_daterange->offsetSet('from', $all_ranges[0]);
+            $session_daterange->offsetSet('till', $all_ranges[1]);
             $link_client_id = $session->offsetGet('googleapi_client_id');
             return $this->redirect()->toUrl('/googleapi/index/' . $link_client_id);
         } else {
@@ -161,7 +186,8 @@ class GoogleapiController extends AbstractActionController {
             $googleapi_client_id = $session->offsetGet('googleapi_client_id');
             $session->offsetSet('current_website_id', $website_id);
             $session->offsetSet('msg', "");
-            return $this->redirect()->toUrl('/googleapi/index/' . $googleapi_client_id);
+            $session->offsetSet('check_website_id', "yes");
+            return $this->redirect()->toUrl('/googleapi/index/' . $googleapi_client_id . '?cws_id=' . $website_id);
         } else {
             return $this->redirect()->toUrl('/auth/index/login'); //redirect from one module to another
         }

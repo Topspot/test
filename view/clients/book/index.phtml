@@ -8,6 +8,78 @@ $auth = new AuthenticationService();
 ?>
 <div class="row">
     <div class="col-xs-12"> 
+        <div class="row" style="margin-bottom: 20px;">
+    <div class="space-6" ></div>
+            <div class="space-6"></div>
+            <div class="space-6"></div>
+<!--            <div class="col-sm-2"></div>-->
+            <div class="col-sm-12">
+                <a id="addbuttonlink" href="/lead/index/<?php echo $current_website_id ?>" >   
+            <span class="btn btn-app btn-sm btn-light parts-box">
+                            <div class="infobox-icon">
+                                    <i class="icon-group"></i>
+                            </div>
+
+                            <div class="infobox-data">
+                                    <div class="infobox-content">Leads</div>
+                                    
+                            </div>
+            </span>
+              </a>
+             <a href="/googleapi/index/<?php echo $current_website_id ?>" >       
+            <span class="btn btn-app btn-sm btn-light parts-box">
+                            <div class="infobox-icon">
+                                    <i class="icon-bar-chart"></i>
+                            </div>
+
+                            <div class="infobox-data">
+                                    <div class="infobox-content">Website Traffic</div>
+                                    
+                            </div>
+            </span>
+             </a>     
+             <a href="/link/index/<?php echo $current_website_id ?>" >           
+                 <span class="btn btn-app btn-sm btn-light parts-box" >
+                            <div class="infobox-icon" >
+                                    <i class="icon-link"></i>
+                            </div>
+
+                            <div class="infobox-data">
+                                    <div class="infobox-content">Links</div>
+                                    
+                            </div>
+            </span>
+              </a>      
+<!--            <div class="space-6"></div>
+            <div class="space-6"></div>
+            <div class="col-sm-1"></div>-->
+            <a href="/transcript/index/<?php echo $current_website_id ?>" >      
+            <span class="btn btn-app btn-sm btn-light parts-box" >
+                            <div class="infobox-icon">
+                                    <i class="icon-file"></i>
+                            </div>
+
+                            <div class="infobox-data">
+                                    <div class="infobox-content">Transcripts</div>
+                                    
+                            </div>
+            </span> 
+             </a>
+            <a href="/book/index/<?php echo $current_website_id ?>" >    
+            <span class="btn btn-app btn-sm btn-primary parts-box" >
+                            <div class="infobox-icon">
+                                    <i class="icon-book"></i>
+                            </div>
+
+                            <div class="infobox-data">
+                                    <div class="infobox-content">Book Status</div>
+                                    
+                            </div>
+            </span> 
+              </a>   
+           </div>  
+<div class="space-6" ></div>
+  </div>
         <?php
          $rowCount = count($website_data);
 //         print_r($website_data);exit;

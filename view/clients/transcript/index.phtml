@@ -4,11 +4,86 @@ use Zend\Session\Container;
 use Zend\Authentication\AuthenticationService;
 
 $session = new Container('transcript');
-$daterange = $session->offsetGet('daterange');
+//$daterange = $session->offsetGet('daterange');
+$session_daterange = new Container('daterange');
+$transcript_client_id = $session->offsetGet('transcript_client_id');
+$daterange = $session_daterange->offsetGet('daterange');
 $auth = new AuthenticationService();
 ?>
 <div class="row">
     <div class="col-xs-12"> 
+        <div class="row" style="margin-bottom: 20px;">
+            <div class="space-6" ></div>
+            <div class="space-6"></div>
+            <div class="space-6"></div>
+            <!--            <div class="col-sm-2"></div>-->
+            <div class="col-sm-12">
+                <a id="addbuttonlink" href="/lead/index/<?php echo $transcript_client_id ?>" >   
+                    <span class="btn btn-app btn-sm btn-light parts-box">
+                        <div class="infobox-icon">
+                            <i class="icon-group"></i>
+                        </div>
+
+                        <div class="infobox-data">
+                            <div class="infobox-content">Leads</div>
+
+                        </div>
+                    </span>
+                </a>
+                <a href="/googleapi/index/<?php echo $transcript_client_id ?>" >       
+                    <span class="btn btn-app btn-sm btn-light parts-box">
+                        <div class="infobox-icon">
+                            <i class="icon-bar-chart"></i>
+                        </div>
+
+                        <div class="infobox-data">
+                            <div class="infobox-content">Website Traffic</div>
+
+                        </div>
+                    </span>
+                </a>     
+                <a href="/link/index/<?php echo $transcript_client_id ?>" >           
+                    <span class="btn btn-app btn-sm btn-light parts-box" >
+                        <div class="infobox-icon" >
+                            <i class="icon-link"></i>
+                        </div>
+
+                        <div class="infobox-data">
+                            <div class="infobox-content">Links</div>
+
+                        </div>
+                    </span>
+                </a>      
+                <!--            <div class="space-6"></div>
+                            <div class="space-6"></div>
+                            <div class="col-sm-1"></div>-->
+                <a href="/transcript/index/<?php echo $transcript_client_id ?>" >      
+                    <span class="btn btn-app btn-sm btn-primary parts-box" >
+                        <div class="infobox-icon">
+                            <i class="icon-file"></i>
+                        </div>
+
+                        <div class="infobox-data">
+                            <div class="infobox-content">Transcripts</div>
+
+                        </div>
+                    </span> 
+                </a>
+                <a href="/book/index/<?php echo $transcript_client_id ?>" >    
+                    <span class="btn btn-app btn-sm btn-light parts-box" >
+                        <div class="infobox-icon">
+                            <i class="icon-book"></i>
+                        </div>
+
+                        <div class="infobox-data">
+                            <div class="infobox-content">Book Status</div>
+
+                        </div>
+                    </span> 
+                </a>   
+            </div>  
+            <div class="space-6"></div>
+        </div>
         <?php
         $rowCount = count($website_data);
 //  print_r($auth->getIdentity()->roles_id);
@@ -22,10 +97,10 @@ $auth = new AuthenticationService();
                     </button>
 
                     <i class="icon-ok red"></i>
-        <?php echo $message; ?>
+                    <?php echo $message; ?>
 
                 </div>          
-    <?php } else { ?>
+            <?php } else { ?>
 
                 <div class="alert alert-block alert-success">
                     <button type="button" class="close" data-dismiss="alert">
@@ -33,7 +108,7 @@ $auth = new AuthenticationService();
                     </button>
 
                     <i class="icon-ok green"></i>
-                <?php echo $message; ?>
+                    <?php echo $message; ?>
                 </div> 
                 <?php
             }
@@ -53,7 +128,7 @@ $auth = new AuthenticationService();
                         <input class="form-control get-date-range hidden" name="date-range-picker" id="date-range-picker" type="text" data-date-format="dd-mm-yyyy" value="<?php echo $daterange; ?>" />
                     <?php } else { ?>
                         <input class="form-control get-date-range hidden" name="date-range-picker" id="date-range-picker" type="text" data-date-format="dd-mm-yyyy" />
-                <?php } ?>
+                    <?php } ?>
                     <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
                     <span></span> <b class="caret"></b>
                 </div>
@@ -66,7 +141,7 @@ $auth = new AuthenticationService();
                                     $session->offsetSet('transcript_website_id', $website->id);
                                     ?>
                                     <option value="<?php echo $website->id ?>"><?php echo $website->website ?></option>
-                                <?php
+                                    <?php
                                 }
                             }
                             ?>
@@ -75,7 +150,7 @@ $auth = new AuthenticationService();
                                 if ($current_website_id != $website->id) {
                                     ?>                        
                                     <option value="<?php echo $website->id ?>"><?php echo $website->website ?></option>
-                                <?php
+                                    <?php
                                 }
                             }
                             ?>
@@ -84,9 +159,9 @@ $auth = new AuthenticationService();
                             <?php foreach ($client_websites as $website) {
                                 ?>
                                 <option value="<?php echo $website->id ?>"><?php echo $website->website ?></option>
-                        <?php } ?>
-                    <?php }
-                    ?>
+                            <?php } ?>
+                        <?php }
+                        ?>
                     </select>
                 </div> 
                 <?php if ($auth->getIdentity()->roles_id == 3) {
@@ -97,7 +172,7 @@ $auth = new AuthenticationService();
                     if ($applying_user_rights->crud_transcript == 1) {
                         ?>
                         <div class="pull-left" style="margin-left: 0px">
-                            <a href="/transcript/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Transcript</a>
+                            <a href="/transcript/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add Transcript</a>
                         </div>   
                         <div class="pull-left" style="margin-left: 10px">
                             <?php if ($rowCount > 0) {
@@ -121,7 +196,7 @@ $auth = new AuthenticationService();
                             <?php if ($rowCount > 0) {
                                 ?>
                                 <a href="#" onclick="downloadAll(<?php echo $current_website_id; ?>);" class="btn btn-grey pull-right" data-id="transcript" style="margin-right: 10px;">Download All</a>
-                        <?php } ?>
+                            <?php } ?>
                         </div>
 
                         <?php
@@ -131,7 +206,7 @@ $auth = new AuthenticationService();
                 } else {
                     ?>
                     <div class="pull-left" style="margin-left: 0px">
-                        <a href="/transcript/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add New Transcript</a>
+                        <a href="/transcript/add/<?php echo $current_website_id; ?>" id="addbuttonlink" class="btn btn-primary">Add Transcript</a>
                     </div>   
                     <div class="pull-left" style="margin-left: 10px">
                         <?php if ($rowCount > 0) {
@@ -155,14 +230,14 @@ $auth = new AuthenticationService();
                         <?php if ($rowCount > 0) {
                             ?>
                             <a href="#" onclick="downloadAll(<?php echo $current_website_id; ?>);" class="btn btn-grey pull-right" data-id="transcript" style="margin-right: 10px;">Download All</a>
-                    <?php } ?>
+                        <?php } ?>
                     </div>
-                <?php
-            }
-            ?>    
+                    <?php
+                }
+                ?>    
             </div>
         </div>   
-<?php if ($rowCount > 0) { ?>
+        <?php if ($rowCount > 0) { ?>
             <div class="table-header" style="min-height: 42px;">
                 Results for "Transcripts"
             </div>
@@ -186,26 +261,25 @@ $auth = new AuthenticationService();
 
                             <?php if ($auth->getIdentity()->roles_id == 3) {
                                 ?> <th class="hidden"></th> <?php
-                    } else if ($auth->getIdentity()->roles_id == 2) {
-                        if ($applying_user_rights->crud_transcript == 1) {
+                            } else if ($auth->getIdentity()->roles_id == 2) {
+                                if ($applying_user_rights->crud_transcript == 1) {
                                     ?>   
                                     <th>Actions</th>
-                                        <?php
-                                    } else {
-                                        ?> <th class="hidden"></th> <?php
-                        }
-                    } else {
+                                    <?php
+                                } else {
+                                    ?> <th class="hidden"></th> <?php
+                                    }
+                                } else {
                                     ?>   
                                 <th>Actions</th>
-                        <?php
-                    }
-                    ?>
+                                <?php
+                            }
+                            ?>
                         </tr>
                     </thead>
 
                     <tbody class="transcripttable">
                         <tr>
-
                             <?php
 //                         print_r($website_data);exit;
                             foreach ($website_data as $transcript) {
@@ -242,9 +316,9 @@ $auth = new AuthenticationService();
 
                                 <?php if ($auth->getIdentity()->roles_id == 3) {
                                     ?>  <td class="hidden"></td> <?php
-                    } else if ($auth->getIdentity()->roles_id == 2) {
-                        if ($applying_user_rights->crud_transcript == 1) {
-                            ?>
+                                } else if ($auth->getIdentity()->roles_id == 2) {
+                                    if ($applying_user_rights->crud_transcript == 1) {
+                                        ?>
                                         <td>
                                             <div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
                                                 <a class="green" href="<?php echo $this->url('transcript', array('action' => 'edit', 'id' => $transcript->id)); ?>">
@@ -320,19 +394,19 @@ $auth = new AuthenticationService();
                                             </div>
                                         </div>
                                     </td>
-                                <?php
-                            }
-                            ?>
+                                    <?php
+                                }
+                                ?>
                             </tr>
-            <?php } ?>              
+                        <?php } ?>              
                     </tbody>
                 </table>
             </div>
-<?php
-} else {
-    echo "NO RESULT FOUND";
-}
-?> 
+            <?php
+        } else {
+            echo "NO RESULT FOUND";
+        }
+        ?> 
     </div>
 </div>
 <div id="modal-table" class="modal fade" tabindex="-1">
@@ -369,9 +443,10 @@ $auth = new AuthenticationService();
 </div><!-- /.modal-table -->
 <?php
 $message = '';
-$session->offsetSet('current_website_id', '');
-$session->offsetSet('daterange', '');
-$session->offsetSet('from', '');
-$session->offsetSet('till', '');
+//$session->offsetSet('current_website_id', '');
+$session->offsetSet('check_website_id', '');
+//$session->offsetSet('daterange', '');
+//$session->offsetSet('from', '');
+//$session->offsetSet('till', '');
 $session->offsetSet('msg', '');
 ?>
